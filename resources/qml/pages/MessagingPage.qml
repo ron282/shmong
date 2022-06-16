@@ -25,6 +25,7 @@ Page {
     property bool isGroup : shmong.rosterController.isGroup(conversationId);
     property string imagePath : shmong.rosterController.getAvatarImagePathForJid(conversationId);
     property bool refreshDate : false;
+    property int availability : shmong.rosterController.getAvailability(conversationId)
 
     Timer {
         interval: 60000; running: true; repeat: true
@@ -45,7 +46,7 @@ Page {
         id: banner;
         title: trimStr(shmong.rosterController.getNameForJid(conversationId));
         Image {
-            id: avatar;
+            id: avatar
             parent: banner.extraContent;
             width: Theme.iconSizeMedium;
             height: width;
@@ -54,7 +55,7 @@ Page {
             fillMode: Image.PreserveAspectCrop;
             antialiasing: true;
             anchors {
-                margins: Theme.paddingMedium;
+                leftMargin: Theme.paddingMedium;
                 verticalCenter: parent.verticalCenter;
             }
             Rectangle {
@@ -70,288 +71,295 @@ Page {
 
         verticalLayoutDirection: ListView.BottomToTop;
         clip: true;
-        focus: true
-        spacing: Theme.paddingMedium;
+        focus: true;
         cacheBuffer: Screen.width // do avoid flickering when image width is changed
+        spacing: Theme.paddingMedium
 
         model: shmong.persistence.messageController
+        Component {
+            id: sectionHeader
+            Label {
+                property string section: getMsgDate(new Date (parent.ListView.section * 1000))
+                property string nextSection: getMsgDate(new Date (parent.ListView.nextSection * 1000))
+                property bool boundary: section != nextSection
 
-        delegate: ListItem {
-            id: item;
+                text: boundary ? section : ""
+                color: Theme.highlightColor
+                height: text.length > 0 ? Theme.itemSizeExtraSmall : 0
+                font.pixelSize: Theme.fontSizeMedium
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+        }
 
-            property string file : shmong.getLocalFileForUrl(message)
+        section.property: "timestamp"
 
-            contentHeight: shadow.height;
+        delegate: Item {
+            id: wrapper;
 
-            anchors {
-                left: parent.left;
-                right: parent.right;
-                margins: view.spacing;
+            property bool sectionBoundary: ListView.previousSection != ListView.section
+            property Item section
+
+            height: section === null ? item.height : item.height + section.height
+            width: parent.width
+
+            property string file : shmong.getLocalFileForUrl(model.message)
+            readonly property bool isVideo : startsWith(model.type, "video")
+            readonly property bool isImage : startsWith(model.type, "image")
+            readonly property bool isAudio : startsWith(model.type, "audio")
+            readonly property bool isTxt : startsWith(model.type, "txt")
+            readonly property bool isFile : ! isTxt
+
+            onSectionBoundaryChanged: {
+                if (sectionBoundary) {
+                    section = sectionHeader.createObject(wrapper)
+                } else {
+                    section.destroy()
+                    section = null
+                }
             }
 
-            readonly property bool alignRight      : (direction == 1);
-            readonly property int  maxContentWidth : (width * 0.85);
-            readonly property int mediaWidth : maxContentWidth * 0.75
-            readonly property int mediaHeight : (mediaWidth * 2) / 3
-            readonly property bool isVideo : startsWith(type, "video")
-            readonly property bool isImage : startsWith(type, "image")
-            readonly property string iconFileSource : getFileIcon(type)
-
-            Rectangle {
-                id: shadow;
-                color: "white";
-                radius: 3;
-                opacity: (item.alignRight ? 0.05 : 0.15);
-                antialiasing: true;
-                anchors {
-                    fill: layout;
-                    margins: -Theme.paddingSmall;
-                }
-            }
-            Column {
-                id: layout;
+            ListItem {
+                id: item
+                y: section ? section.height : 0
+                contentHeight: shadow.height;
 
                 anchors {
-                    left: (item.alignRight ? parent.left : undefined);
-                    right: (!item.alignRight ? parent.right : undefined);
-                    margins: -shadow.anchors.margins;
-                    verticalCenter: parent.verticalCenter;
+                    left: parent.left;
+                    right: parent.right;
+                    margins: Theme.paddingMedium;
                 }
 
-                Label {
-                    text: message;
-                    color: Theme.primaryColor;
-                    width: item.maxContentWidth;
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere;
-                    visible: type === "txt"
+                readonly property bool alignRight      : (model.direction == 1);
+                readonly property int maxContentWidth : (width * 0.85);
+                readonly property int mediaWidth : maxContentWidth * 0.75
+                readonly property int mediaHeight : (mediaWidth * 2) / 3
 
-                    font {
-                        family: Theme.fontFamilyHeading;
-                        pixelSize: Theme.fontSizeMedium;
-                    }
-
-                    onLinkActivated: Qt.openUrlExternally(link)
-                }
-
-                BackgroundItem {
-
-                    id: bkgnd
-                    width: thumb.width
-                    height: isVideo || isImage ? thumb.height : iconFile.height 
-                    visible: type != "txt"
-
-                    Thumbnail {
-                        id: thumb
-
-                        source: isVideo || isImage ? item.file : ""
-                        mimeType: type
-
-                        sourceSize.width: item.mediaWidth
-                        sourceSize.height: item.mediaHeight
-
-                        width: implicitWidth > 0 ? implicitWidth : item.mediaWidth
-                        height: item.mediaHeight
-
-                        fillMode: Thumbnail.PreserveAspectFit;
-                        priority: Thumbnail.NormalPriority
-
-                        Icon {
-                            visible: isVideo
-                            source: "image://theme/icon-m-file-video"
-                            anchors.centerIn : parent
-                        }
-                    }
-                    Row {
-                        id: placeholder
-                        visible: thumb.status != Thumbnail.Ready
-                        Icon {
-                            id: iconFile
-                            source: iconFileSource
-                        }
-                        Button {
-                            visible: item.file == ""
-                            anchors.verticalCenter: iconFile.verticalCenter
-                            id: bnDownloadAttachment
-                            text: qsTr("Download")
-                            onClicked: {
-                                shmong.downloadFile(message, id);
-                            }
-                        }
-                        Label {
-                            visible: thumb.status == Thumbnail.Error
-                            anchors.verticalCenter: iconFile.verticalCenter
-                            text: qsTr("Impossible to load")
-                            color: Theme.primaryColor;
-                            width: parent.width;
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere;
-                            font {
-                                family: Theme.fontFamilyHeading;
-                                pixelSize: Theme.fontSizeMedium;
-                            }
-                        }
+                Rectangle {
+                    id: shadow;
+                    color: "white";
+                    radius: 3;
+                    opacity: (item.alignRight ? 0.05 : 0.15);
+                    antialiasing: true;
+                    anchors {
+                        fill: layout;
+                        margins: -Theme.paddingSmall;
                     }
                 }
-                Label {
-                    color: Theme.secondaryColor;
-                    visible: false; // type !== "txt"
-                    width: item.maxContentWidth;
-                    wrapMode: Text.WrapAnywhere;
-                    font {
-                        family: Theme.fontFamilyHeading;
-                        pixelSize: Theme.fontSizeTiny;
+                Column {
+                    id: layout;
+
+                    anchors {
+                        left: (item.alignRight ? parent.left : undefined);
+                        right: (!item.alignRight ? parent.right : undefined);
+                        margins: -shadow.anchors.margins;
+                        verticalCenter: parent.verticalCenter;
                     }
-                    text: qsTr("Message: ")+message;
-                }
-                Label {
-                    color: Theme.secondaryColor;
-                    visible: false; // type !== "txt"
-                    width: item.maxContentWidth;
-                    wrapMode: Text.WrapAnywhere;
-                    font {
-                        family: Theme.fontFamilyHeading;
-                        pixelSize: Theme.fontSizeTiny;
-                    }
-                    text: qsTr("Local File: ")+item.file;
-                }
-                Label {
-                    visible: false;
-                    color: Theme.secondaryColor;
-                    font {
-                        family: Theme.fontFamilyHeading;
-                        pixelSize: Theme.fontSizeTiny;
-                    }
-                    text: qsTr("Id: ")+id;
-                }
-                Label {
-                    visible: isGroup;
-                    color: Theme.secondaryColor;
-                    font {
-                        family: Theme.fontFamilyHeading;
-                        pixelSize: Theme.fontSizeTiny;
-                    }
-                    text: resource;
-                }
-                Row {
-                    spacing: 5
-                    anchors.right: (!item.alignRight ? parent.right : undefined)
 
                     Label {
-                        id: upload
-                        visible: msgstate == 4
-                        text: qsTr("uploading")
-                        color: Theme.secondaryColor;
+                        text: shmong.addLinks(model.message)
+                        textFormat: Text.StyledText
+                        linkColor: color
+                        width: item.maxContentWidth;
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere;
+                        visible: isTxt
+
                         font {
                             family: Theme.fontFamilyHeading;
-                            pixelSize: Theme.fontSizeTiny;
+                            pixelSize: Theme.fontSizeMedium;
                         }
 
-                        Connections {
-                            target: shmong
-                            onSignalShowStatus: {
-                                if(qsTr(headline) == qsTr("File Upload") && msgstate == 4)
-                                    upload.text = qsTr("uploading ")+body;
+                        onLinkActivated: Qt.openUrlExternally(link)
+                    }
+
+                    BackgroundItem {
+
+                        id: bkgnd
+                        width: thumb.width
+                        height: isVideo || isImage ? thumb.height : iconFile.height
+                        visible: isFile
+
+                        Thumbnail {
+                            id: thumb
+
+                            source: isVideo || isImage ? file : ""
+                            mimeType: model.type
+
+                            sourceSize.width: item.mediaWidth
+                            sourceSize.height: item.mediaHeight
+
+                            width: implicitWidth > 0 ? implicitWidth : item.mediaWidth
+                            height: item.mediaHeight
+
+                            fillMode: Thumbnail.PreserveAspectFit;
+                            priority: Thumbnail.NormalPriority
+
+                            Icon {
+                                visible: isVideo
+                                source: "image://theme/icon-m-file-video"
+                                anchors.centerIn : parent
                             }
-                            onHttpDownloadFinished: {
-                                if(attachmentMsgId == id)
-                                {
-                                    item.file =  shmong.getLocalFileForUrl(message);
+                        }
+                        Row {
+                            id: placeholder
+                            visible: thumb.status != Thumbnail.Ready
+                            Icon {
+                                id: iconFile
+                                source: getFileIcon(model.type)
+                            }
+                            Button {
+                                visible: file == ""
+                                anchors.verticalCenter: iconFile.verticalCenter
+                                id: bnDownloadAttachment
+                                text: qsTr("Download")
+                                onClicked: {
+                                    shmong.downloadFile(model.message, model.id);
+                                }
+                            }
+                            Label {
+                                visible: thumb.status == Thumbnail.Error
+                                anchors.verticalCenter: iconFile.verticalCenter
+                                text: qsTr("Impossible to load")
+                                color: Theme.primaryColor;
+                                width: parent.width;
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere;
+                                font {
+                                    family: Theme.fontFamilyHeading;
+                                    pixelSize: Theme.fontSizeMedium;
                                 }
                             }
                         }
                     }
                     Label {
-                        text: qsTr("send failed")
-                        visible: msgstate == 5
+                        visible: isGroup;
                         color: Theme.secondaryColor;
                         font {
                             family: Theme.fontFamilyHeading;
                             pixelSize: Theme.fontSizeTiny;
                         }
+                        text: model.resource;
                     }
-                    Label {
-                        text: refreshDate, getDateDiffFormated(new Date (timestamp * 1000));
-                        visible: msgstate != 4
-                        color: Theme.secondaryColor;
-                        font {
-                            family: Theme.fontFamilyHeading;
-                            pixelSize: Theme.fontSizeTiny;
+                    Row {
+                        spacing: 5
+                        anchors.right: (!item.alignRight ? parent.right : undefined)
+
+                        Label {
+                            id: upload
+                            visible: model.msgstate == 4
+                            text: qsTr("uploading")
+                            color: Theme.secondaryColor;
+                            font {
+                                family: Theme.fontFamilyHeading;
+                                pixelSize: Theme.fontSizeTiny;
+                            }
+
+                            Connections {
+                                target: shmong
+                                onSignalShowStatus: {
+                                    if(qsTr(headline) == qsTr("File Upload") && model.msgstate == 4)
+                                        upload.text = qsTr("uploading ")+body;
+                                }
+                                onHttpDownloadFinished: {
+                                    if(attachmentMsgId == id)
+                                    {
+                                        file =  shmong.getLocalFileForUrl(model.message);
+                                    }
+                                }
+                            }
+                        }
+                        Label {
+                            text: qsTr("send failed")
+                            visible: msgstate == 5
+                            color: Theme.secondaryColor;
+                            font {
+                                family: Theme.fontFamilyHeading;
+                                pixelSize: Theme.fontSizeTiny;
+                            }
+                        }
+                        Label {
+                            text: refreshDate, getDateDiffFormated(new Date (timestamp * 1000));
+                            visible: msgstate != 4
+                            color: Theme.secondaryColor;
+                            font {
+                                family: Theme.fontFamilyHeading;
+                                pixelSize: Theme.fontSizeTiny;
+                            }
+                        }
+
+                        Image {
+                            id: chatmarker
+                            source: {
+                                if (msgstate == 3) {
+                                    return "../img/read_green.png"
+                                }
+                                if (msgstate == 2) {
+                                    return "../img/2check.png"
+                                }
+                                if (msgstate == 1) {
+                                    return "../img/check.png"
+                                }
+                                return ""
+                            }
+                        }
+
+                        Image {
+                            source: {
+                                if (model.security == 1) { // omemo
+                                    return "image://theme/icon-s-outline-secure"
+                                }
+                                return ""
+                            }
                         }
                     }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: isFile && thumb.status != Thumbnail.Error && file != ""
 
-                    Image {
-                        id: chatmarker
-                        source: {
-                            if (msgstate == 3) {
-                                return "../img/read_green.png"
-                            }
-                            if (msgstate == 2) {
-                                return "../img/2check.png"
-                            }
-                            if (msgstate == 1) {
-                                return "../img/check.png"
-                            }
-                            return ""
-                        }
-                    }
-
-                    Image {
-                        source: {
-                            if (security == 1) { // omemo
-                                return "image://theme/icon-s-outline-secure"
-                            }
-                            return ""
-                        }
-                    }
-                }
-            }
-            MouseArea {
-                anchors.fill: parent
-                enabled: thumb.status != Thumbnail.Error && item.file != ""
-
-                onClicked: {
-                    if (startsWith(type, "image"))
-                        pageStack.push(Qt.resolvedUrl("ImagePage.qml"),{ 'imgUrl': item.file })
-                    else if (startsWith(type, "video"))
-                        pageStack.push(Qt.resolvedUrl("VideoPage.qml"),{ 'path': item.file })
-                    else if (startsWith(type, "audio"))
-                        pageStack.push(Qt.resolvedUrl("VideoPage.qml"),{ 'path': item.file });
-                }
-
-                onPressAndHold: {
-                    item.openMenu();
-                }
-            }
-            menu: ContextMenu {
-                MenuItem {
-                    text: qsTr("Copy")
-                    visible: type == "txt"
-                    onClicked: Clipboard.text = message
-                }
-                MenuItem {
-                    text: qsTr("Copy URL")
-                    visible: type != "txt"
-                    onClicked: Clipboard.text = message
-                }
-                MenuItem {
-                    text: qsTr("Send again")
-                    visible: (msgstate == 5 && shmong.canSendFile())
                     onClicked: {
-                        shmong.sendFile(conversationId, message);
-                     }
+                        if (isImage)
+                            pageStack.push(Qt.resolvedUrl("ImagePage.qml"),{ 'imgUrl': file })
+                        else if (isVideo)
+                            pageStack.push(Qt.resolvedUrl("VideoPage.qml"),{ 'path': file })
+                        else if (isAudio)
+                            pageStack.push(Qt.resolvedUrl("VideoPage.qml"),{ 'path': file });
+                    }
+
+                    onPressAndHold: {
+                        item.openMenu();
+                    }
                 }
-                MenuItem {
-                    text: qsTr("Save")
-                    visible:  (type != "txt") && (direction == 1)
-                    onClicked: {
-                        shmong.saveAttachment(item.file);
-                     }
-                }
-                MenuItem {
-                    visible: isGroup;
-                    text: qsTr("Status")
-                    onClicked:  {
-                        shmong.persistence.gcmController.setFilterOnMsg(id);
-                        pageStack.push(pageMsgStatus);
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("Copy")
+                        visible: isTxt
+                        onClicked: Clipboard.text = model.message
+                    }
+                    MenuItem {
+                        text: qsTr("Copy URL")
+                        visible: isFile
+                        onClicked: Clipboard.text = model.message
+                    }
+                    MenuItem {
+                        text: qsTr("Send again")
+                        visible: (model.msgstate == 5 && shmong.canSendFile())
+                        onClicked: {
+                            shmong.sendFile(conversationId, model.message);
+                         }
+                    }
+                    MenuItem {
+                        text: qsTr("Save")
+                        visible:  isFile && (model.direction == 1)
+                        onClicked: {
+                            shmong.saveAttachment(file);
+                         }
+                    }
+                    MenuItem {
+                        visible: isGroup;
+                        text: qsTr("Status")
+                        onClicked:  {
+                            shmong.persistence.gcmController.setFilterOnMsg(id);
+                            pageStack.push(pageMsgStatus);
+                        }
                     }
                 }
             }
@@ -586,6 +594,29 @@ Page {
     }
     function startsWith(s,start) {
         return (s.substring(0, start.length) == start); 
+    }
+    function getMsgDate(d) {
+        var n = new Date();
+
+        if(d.getFullYear() == n.getFullYear() &&
+           d.getMonth() == n.getMonth() &&
+           d.getDate() == n.getDate() )
+        {
+            return qsTr("Today");
+        }
+        else
+        {
+            var locale = Qt.locale();
+
+            if(d.getFullYear() != n.getFullYear())
+            {
+                return d.toLocaleDateString(locale, "d MMM yyyy");
+            }
+            else
+            {
+                return d.toLocaleDateString(locale, "d MMM");
+            }
+        }
     }
     function getDateDiffFormated(d) {
         var n = new Date();

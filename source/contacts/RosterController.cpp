@@ -203,6 +203,18 @@ bool RosterController::updateAvailabilityForJid(const QString &jid, RosterItem::
     return somethingChanged;
 }
 
+int RosterController::getAvailability(const QString& jid)
+{
+    for (auto item: rosterList_)
+    {
+        if (item->getJid().compare(jid, Qt::CaseInsensitive) == 0)
+        {
+            return item->getAvailability();
+        }
+    }
+
+    return RosterItem::AVAILABILITY_UNKNOWN;
+}
 
 void RosterController::handlePresenceReceived(const QXmppPresence &presence)
 {
@@ -637,9 +649,9 @@ void RosterController::sortRosterList()
 {
     struct
     {
-        bool operator()(RosterItem* a, RosterItem* b)
+        bool operator()(RosterItem* a, RosterItem* b) const
         {
-            return a->getName() < b->getName();
+            return a->getName().compare(b->getName(), Qt::CaseInsensitive) < 0;
         }
     } customSort;
 

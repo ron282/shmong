@@ -6,10 +6,23 @@ Page {
     id: page;
     allowedOrientations: Orientation.All;
 
+    Component {
+        id: sectionHeading
+
+        Label {
+            text: section
+            color: Theme.highlightColor
+            font.pixelSize: Theme.fontSizeLarge
+            anchors {
+                left: parent.left
+                leftMargin: Theme.paddingMedium
+            }
+        }
+    }
+
     SilicaListView {
         id: jidlist
         header: Column {
-            spacing: Theme.paddingMedium;
             anchors {
                 left: parent.left;
                 right: parent.right;
@@ -27,9 +40,31 @@ Page {
             //            }
         }
         model: shmong.rosterController.rosterList
+        spacing: Theme.paddingMedium;
+
+        section.property: "name"
+        section.delegate: sectionHeading
+        section.criteria: ViewSection.FirstCharacter
+
         delegate: ListItem {
             id: item;
-            menu: contextMenu
+
+            menu: ContextMenu {
+                MenuItem {
+                    text:  qsTr("Remove");
+                    onClicked: {
+                        remorseAction(qsTr("Remove contact"),
+                        function() {
+                            if (shmong.rosterController.isGroup(jid)) {
+                                shmong.removeRoom(jid);
+                            }
+                            else {
+                                shmong.rosterController.removeContact(jid);
+                            }
+                        });
+                    }
+                }
+            }
             contentHeight: Theme.itemSizeMedium;
 
             function removeContact() {
@@ -56,6 +91,7 @@ Page {
                 anchors {
                     top: parent.top;
                     left: parent.left;
+                    leftMargin: Theme.paddingMedium
                     bottom: parent.bottom;
                 }
 
@@ -66,9 +102,20 @@ Page {
                     anchors.fill: parent;
                 }
             }
+            Rectangle {
+                id: presence
+                anchors {
+                    left: img.right
+                    top: img.top
+                }
+                width: Theme.paddingSmall
+                height: img.height
+                color: availability === RosterItem.AVAILABILITY_ONLINE ? "lime" : availability === RosterItem.AVAILABILITY_OFFLINE ? "gray" : "transparent"
+            }
             Column {
                 anchors {
-                    left: img.right;
+                    left: presence.right;
+                    right: parent.right
                     margins: Theme.paddingMedium;
                     verticalCenter: parent.verticalCenter;
                 }
@@ -82,6 +129,8 @@ Page {
                     font.pixelSize: Theme.fontSizeMedium;
                 }
                 Row {
+                    width: parent.width
+
                     Image {
                         id: subscriptionImage;
                         visible: ! shmong.rosterController.isGroup(jid)
@@ -94,6 +143,8 @@ Page {
                     Label {
                         id: jidId;
                         text: jid;
+                        width: parent.width - subscriptionImage.width - Theme.paddingMedium
+                        truncationMode: TruncationMode.Fade
                         color: Theme.secondaryColor;
                         font.pixelSize: Theme.fontSizeTiny;
                     }

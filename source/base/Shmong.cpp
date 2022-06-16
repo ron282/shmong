@@ -156,9 +156,6 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     pubsubManager_ = new QXmppPubSubManager();
     client_->addExtension(pubsubManager_);
 
-    // Carbon copies
-    client_->addNewExtension<QXmppCarbonManagerV2>();
-
     // Omemo
     if (settings_->getSoftwareFeatureOmemoEnabled() == true)
     {
@@ -452,3 +449,33 @@ unsigned int Shmong::getMaxUploadSize()
 {
     return httpFileUploadManager_->getMaxFileSize();
 }
+
+QString Shmong::addLinks(const QString &str)
+{
+    QStringList list=str.split(' ');
+
+    QStringList::iterator it;
+
+    for (it = list.begin(); it != list.end(); it++)
+    {
+        if((*it).contains('.') && (*it).endsWith('.') == false && (*it).contains("..") == false)
+        {
+            QUrl url(*it, QUrl::StrictMode);
+
+            if(url.isValid())
+            {
+                if(url.isRelative())
+                {
+                    (*it) = "<a href=\"http://" + (*it) + "\">" + (*it) +"</a>";
+                }
+                else
+                {
+                    (*it) = "<a href=\"" + (*it) + "\">" + (*it) +"</a>";
+                }
+            }
+        }
+    }
+
+    return list.join(' ');
+}
+

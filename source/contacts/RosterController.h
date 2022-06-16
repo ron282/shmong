@@ -34,6 +34,8 @@ public:
     Q_INVOKABLE QString getAvatarImagePathForJid(QString const &jid);
     Q_INVOKABLE QString getNameForJid(QString const &jid);
 
+    Q_INVOKABLE int getAvailability(const QString& jid);
+
     void requestRoster();
     QQmlListProperty<RosterItem> getRosterList();
 

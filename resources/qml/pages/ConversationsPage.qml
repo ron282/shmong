@@ -28,6 +28,7 @@ Page {
         delegate: ListItem {
             id: item;
             contentHeight: Theme.itemSizeMedium;
+            property int availability : shmong.rosterController.getAvailability(jid)
 
             onClicked: {
                 console.log("set current char partner: " + jid);
@@ -52,9 +53,40 @@ Page {
                     anchors.fill: parent;
                 }
             }
+            Rectangle {
+                id: presence
+                anchors {
+                    left: img.right
+                    top: img.top
+                }
+                width: Theme.paddingSmall
+                height: img.height
+                color: availability === RosterItem.AVAILABILITY_ONLINE ? "lime" : availability === RosterItem.AVAILABILITY_OFFLINE ? "gray" : "transparent"
+            }
+            Rectangle {
+                width: Math.max(lblUnread.implicitWidth+radius, height)
+                height: lblUnread.implicitHeight
+                color: Theme.highlightBackgroundColor
+                radius: height*0.5
+                anchors {
+                    top: img.top
+                    right: img.right
+                    topMargin: Theme.paddingSmall
+                    rightMargin: Theme.paddingSmall
+                }
+                visible: (unreadmessages > 0) ? true : false
+                Label {
+                    id: lblUnread
+                    font.bold: true
+                    text: unreadmessages
+                    font.pixelSize: Theme.fontSizeTiny
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
             Column {
                 anchors {
-                    left: img.right;
+                    left: presence.right;
                     margins: Theme.paddingMedium;
                     verticalCenter: parent.verticalCenter;
                     right: parent.right
@@ -112,6 +144,12 @@ Page {
                                             shmong.persistence.removeConversation(jid);
                                         })
                     }
+                }
+            }
+            Connections {
+                target: shmong
+                onRosterListChanged: {
+                    availability = shmong.rosterController.getAvailability(jid);
                 }
             }
         }

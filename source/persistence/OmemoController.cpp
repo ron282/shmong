@@ -79,6 +79,9 @@ QXmppTask<QXmppOmemoStorage::OmemoData> OmemoController::allData()
         d.ownDevice->publicIdentityKey = QByteArray::fromHex(r.value(Database::sqlPublicIdentityKey_).toString().toUtf8());
         d.ownDevice->latestSignedPreKeyId = r.value(Database::sqlLatestSignedPreKeyId_).toUInt();
         d.ownDevice->latestPreKeyId = r.value(Database::sqlLatestPreKeyId_).toUInt();        
+
+        qDebug() << "DBread ownDevice.id=" << QString::number(d.ownDevice->id);
+        qDebug() << "DBread device->publicIdentityKey (" << QString::number(d.ownDevice->publicIdentityKey.count()) << "):" << d.ownDevice->publicIdentityKey.toBase64();
     }
     else
     {
@@ -128,8 +131,6 @@ QXmppTask<void> OmemoController::setOwnDevice(const std::optional<OwnDevice> &de
 
     if(device.has_value())
     {
-        qDebug() << "OmemoController::setOwnDevice(id=" << device->id << ")" << endl;
-
         r.setValue(Database::sqlOwnDeviceId_, device->id);
         r.setValue(Database::sqlOwnDeviceLabel_, device->label);
         r.setValue(Database::sqlPrivateIdentityKey_, device->privateIdentityKey.toHex());
