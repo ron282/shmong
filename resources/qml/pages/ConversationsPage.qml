@@ -43,6 +43,7 @@ Page {
                 anchors {
                     top: parent.top;
                     left: parent.left;
+                    leftMargin: Theme.paddingMedium
                     bottom: parent.bottom;
                 }
 

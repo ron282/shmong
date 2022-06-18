@@ -87,7 +87,7 @@ Page {
                 color: Theme.highlightColor
                 height: text.length > 0 ? Theme.itemSizeExtraSmall : 0
                 font.pixelSize: Theme.fontSizeMedium
-                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.horizontalCenter: parent !== null ? parent.horizontalCenter : undefined
             }
         }
 
