@@ -1,0 +1,40 @@
+[[section-technical-risks]]
+== Risks and Technical Debts
+
+The amount of work to be done is dependent on the right components and library's which are chosen. There are some technical requirements to be met for each library:
+
+=== XMPP Library
+
+Technical requirements:
+
+* Majority of XEP's available for a modern XMPP client
+* Actively developed and maintained
+* High qualtity
+* Library authors well known in the XMPP community
+* Modern C++ interface
+* Security features available
+* Open Source
+
+There are a number of xmpp libraries available which are commonly used, such as:
+
+* libpurple
+* QXmpp
+* Swiften
+* ...
+
+After validating some of them, the Swiften library was chosen because it fulfills most requirements. The only thing missing is modern E2E security (OMEMO).
+
+Nevertheless, the risk of a dropped maintenance of this library exists. Even though it is an open source library, there is no guarantee that the authors of that library or someone else from the XMPP community will continue to actively develop it in the future.
+
+=== E2E Security Library
+
+Technical requirements:
+
+* Implementation of OMEMO
+* Actively developed and maintained
+* High qualtity
+* Open Source
+
+Today only a few C libraries exist which match some of these requirements. As for now, the best choice appears to be https://github.com/gkdr/libomemo[libomemo]. The author develops this library as a base for the lurch plugin, which adds OMEMO support to libpurple.
+
+The integration of this library does not seem to be difficult, but for sure requires some time to get to know all its functions well in order to implement XEP-0384 (OMEMO) in a correct way. Due to the lack of real alternatives, this library was chosen while hoping for sustained and active development and maintenance of it.
