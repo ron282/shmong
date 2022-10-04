@@ -14,9 +14,9 @@
 #include "RosterController.h"
 #include "RosterItem.h"
 #include "Persistence.h"
-//#include "MessageController.h"
-//#include "SessionController.h"
-//#include "GcmController.h"
+#include "MessageController.h"
+#include "SessionController.h"
+#include "GcmController.h"
 
 //#include "FileModel.h"
 #include "System.h"
@@ -38,11 +38,9 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Settings*>("Settings*");
 
     qRegisterMetaType<Persistence*>("Persistence*");
-#if 0
     qRegisterMetaType<MessageController*>("MessageController*");
     qRegisterMetaType<SessionController*>("SessionController*");
     qRegisterMetaType<GcmController*>("GcmController*");
-#endif
 
     // app
     QGuiApplication *pApp = NULL;
