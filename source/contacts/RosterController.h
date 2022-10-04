@@ -3,11 +3,13 @@
 
 #include "RosterItem.h"
 
-#include <Swiften/Swiften.h>
 #include <QObject>
 #include <QQmlListProperty>
-
-class PresenceHandler;
+#include "QXmppClient.h"
+#include "QXmppVCardIq.h"
+#include "QXmppRosterManager.h"
+#include "QXmppVCardManager.h"
+#include "QXmppRosterIq.h"
 
 class RosterController : public QObject
 {
@@ -23,7 +25,7 @@ class RosterController : public QObject
 public:
     RosterController(QObject *parent = 0);
 
-    void setupWithClient(Swift::Client *client);
+    void setupWithClient(QXmppClient *qXmppClient);
 
     Q_INVOKABLE void addContact(const QString& jid, const QString& name);
     Q_INVOKABLE void removeContact(const QString& jid);
@@ -35,13 +37,12 @@ public:
     void requestRoster();
     QQmlListProperty<RosterItem> getRosterList();
 
-    void handleUpdateFromPresence(const Swift::JID &jid, const QString &status, const RosterItem::Availability& availability);
-    bool updateSubscriptionForJid(const Swift::JID &jid, RosterItem::Subscription subscription);
-    bool updateStatusForJid(const Swift::JID &jid, const QString& status);
-    bool updateAvailabilityForJid(const Swift::JID &jid, const RosterItem::Availability& availability);
+    bool updateSubscriptionForJid(const QString &bareJid, QXmppRosterIq::Item::SubscriptionType subscription);
+    bool updateStatusForJid(const QString& jid, const QString& status);
+    bool updateAvailabilityForJid(const QString &jid, RosterItem::Availability availability);
 
 
-    bool updateNameForJid(const Swift::JID &jid, const std::string &name);
+    bool updateNameForJid(const QString &jid, const QString &name);
 
 #ifdef DBUS
     QList<RosterItem *> fetchRosterList();
@@ -55,18 +56,18 @@ signals:
 public slots:
     void addGroupAsContact(QString groupJid, QString groupName);
     void removeGroupFromContacts(QString groupJid);
+    void handleRosterReceived();
+    void handlePresenceReceived(const QXmppPresence &presence);
+    void handlePresenceChanged(const QString &jid, const QString& resource);
 
 private:
-    void handleRosterReceived(Swift::ErrorPayload::ref error);
-    void handleJidAdded(const Swift::JID &jid);
-    void handleJidUpdated(const Swift::JID &jid, const std::string &name, const std::vector< std::string > &params);
-    void handleJidRemoved(const Swift::JID &jid);
+    void handleJidAdded(const QString &bareJid);
+    void handleJidUpdated(const QString &bareJid);
+    void handleJidRemoved(const QString &bareJid);
 
     void sendUnavailableAndUnsubscribeToJid(const QString& jid);
 
-    void handleVCardChanged(const Swift::JID &jid, const Swift::VCard::ref &vCard);
-
-    void handleMessageReceived(Swift::Message::ref message);
+    void handleVCardChanged(const QXmppVCardIq &vCard);
 
     void bindJidUpdateMethodes();
 
@@ -76,13 +77,14 @@ private:
     QString getTypeForJid(itemAttribute const &attribute, QString const &jid);
     bool isJidInRoster(const QString& bareJid);
 
-    void appendToRosterIfNotAlreadyIn(const QString& jid);
+    bool appendToRosterIfNotAlreadyIn(const QString& jid);
     void dumpRosterList();
 
-    Swift::Client* client_;
-    QList<RosterItem*> rosterList_;
+    QXmppClient* qXmppClient_;
+    QXmppRosterManager *qXmppRosterManager_;
+    QXmppVCardManager *qXmppVCardManager_;
 
-    PresenceHandler* presenceHandler_;
+    QList<RosterItem*> rosterList_;
 };
 
 #endif // ROSTERCONTROLLER_H

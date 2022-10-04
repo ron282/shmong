@@ -3,34 +3,29 @@
 
 #include <QObject>
 
-#include <Swiften/Swiften.h>
-
 class Persistence;
 class RosterController;
+class QXmppClient;
+class QXmppMessage;
 
 class ChatMarkers : public QObject
 {
     Q_OBJECT
 public:
     ChatMarkers(Persistence* persistence, RosterController* rosterController, QObject *parent = 0);
-    void setupWithClient(Swift::Client *client);
-
-    static QString getMarkableString();
+    void setupWithClient(QXmppClient *qXmppClient);
 
     void sendDisplayedForJidAndMessageId(QString jid, QString messageId);
     void sendDisplayedForJid(const QString &jid);
 
-    static const QString chatMarkersIdentifier;
-
 signals:
 
 public slots:
+    void handleMessageReceived(const QXmppMessage& message);
 
 private:
-    void handleMessageReceived(Swift::Message::ref message);
-    QString getIdFromRawXml(QString rawXml);
 
-    Swift::Client* client_;
+    QXmppClient* qXmppClient_;
     Persistence* persistence_;
     RosterController* rosterController_;
 };

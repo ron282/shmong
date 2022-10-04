@@ -10,10 +10,10 @@
 #include <QList>
 
 
-#if 0
-class ConnectionHandler;
 class RosterController;
 class Persistence;
+class ConnectionHandler;
+#if 0
 class HttpFileUploadManager;
 class MucManager;
 class DiscoInfoHandler;
@@ -26,12 +26,10 @@ class Shmoose : public QObject
 {
     Q_OBJECT
 
-#if 0
     Q_PROPERTY(RosterController* rosterController READ getRosterController NOTIFY rosterControllerChanged)
     Q_PROPERTY(Persistence* persistence READ getPersistence NOTIFY persistenceChanged)
     Q_PROPERTY(bool connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(Settings* settings READ getSettings NOTIFY settingsChanged)
-#endif
 
 public:
     Shmoose(QObject *parent = 0);
@@ -102,13 +100,13 @@ public:
     void requestHttpUploadSlot();
     void handleHttpUploadResponse(const std::string response);
 
-//    RosterController* getRosterController();
-//    Persistence* getPersistence();
+    RosterController* getRosterController();
+    Persistence* getPersistence();
     Settings* getSettings();
 
     XmppClient* client_;
-//    RosterController* rosterController_;
-//    Persistence* persistence_;
+    RosterController* rosterController_;
+    Persistence* persistence_;
     Settings* settings_;
 
 #if 0

@@ -11,9 +11,9 @@
 #include <QTranslator>
 
 #include "Shmoose.h"
-//#include "RosterController.h"
-//#include "RosterItem.h"
-//#include "Persistence.h"
+#include "RosterController.h"
+#include "RosterItem.h"
+#include "Persistence.h"
 //#include "MessageController.h"
 //#include "SessionController.h"
 //#include "GcmController.h"
@@ -31,16 +31,14 @@
 
 int main(int argc, char *argv[])
 {
-#if 0
     qmlRegisterType<RosterController>( "harbour.shmoose", 1, 0, "RosterController");
     qmlRegisterType<RosterItem>( "harbour.shmoose", 1, 0, "RosterItem");
-#endif
 
     qmlRegisterType<Shmoose>( "harbour.shmoose", 1, 0, "Shmoose");
     qRegisterMetaType<Settings*>("Settings*");
 
-#if 0
     qRegisterMetaType<Persistence*>("Persistence*");
+#if 0
     qRegisterMetaType<MessageController*>("MessageController*");
     qRegisterMetaType<SessionController*>("SessionController*");
     qRegisterMetaType<GcmController*>("GcmController*");

@@ -12,11 +12,11 @@
 
 #include <QDebug>
 
-#if 0
 #include "RosterController.h"
 #include "Persistence.h"
 #include "MessageController.h"
 
+#if 0
 #include "ChatMarkers.h"
 #include "ConnectionHandler.h"
 #include "HttpFileUploadManager.h"
@@ -29,20 +29,23 @@
 #endif
 
 #include "MessageHandler.h"
+#include "QXmppLogger.h"
+#include "QXmppUtils.h"
+#include "QXmppMessage.h"
 
 
 #include "System.h"
 
 Shmoose::Shmoose(QObject *parent) : QObject(parent),
     client_(new XmppClient(this)),
-//    rosterController_(new RosterController(this)),
-//    persistence_(new Persistence(this)),
+    rosterController_(new RosterController(this)),
+    persistence_(new Persistence(this)),
     settings_(new Settings(this)),
 //    stanzaId_(new StanzaId(this)),
 //    connectionHandler_(new ConnectionHandler(this)),
 //    messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, lurchAdapter_, this)),
-    messageHandler_(new MessageHandler(settings_, this)),
 //    httpFileUploadManager_(new HttpFileUploadManager(this)),
+    messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, this)),
 //    mamManager_(new MamManager(persistence_, this)),
 //    mucManager_(new MucManager(this)),
 //    discoInfoHandler_(new DiscoInfoHandler(httpFileUploadManager_, mamManager_, this)),
@@ -51,6 +54,9 @@ Shmoose::Shmoose(QObject *parent) : QObject(parent),
     notSentMsgId_("")
 {
     qApp->setApplicationVersion(version_);
+
+    // FIXME make sure that this is not triggered after a reconnect!
+    connect(client_, &QXmppClient::connected, this, &Shmoose::intialSetupOnFirstConnection);
 
 #if 0
     connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
@@ -126,7 +132,7 @@ void Shmoose::slotAboutToQuit()
 void Shmoose::mainConnect(const QString &jid, const QString &pass)
 {
     qDebug() << "main connect " << jid;
-    //persistence_->openDatabaseForJid(jid);
+    persistence_->openDatabaseForJid(jid);
 
     QString resourceName;
 
@@ -184,7 +190,7 @@ void Shmoose::mainConnect(const QString &jid, const QString &pass)
     // finaly try to connect
 #endif
 
-    client_->logger()->setLoggingType(QXmppLogger::StdoutLogging);
+    client_->logger()->setLoggingType(QXmppLogger::FileLogging);
     client_->connectToServer(jid, pass);
 
     // for saving on connection success
@@ -196,13 +202,14 @@ void Shmoose::mainConnect(const QString &jid, const QString &pass)
 
 //    httpFileUploadManager_->setCompressImages(settings_->getCompressImages());
 //    httpFileUploadManager_->setLimitCompression(settings_->getLimitCompression());
+    qDebug() << "main end " << jid;
 }
 
 void Shmoose::mainDisconnect()
 {
     if (connectionState())
     {
-        //client_->disconnect();
+        client_->disconnect();
     }
 }
 
@@ -218,10 +225,9 @@ void Shmoose::reConnect()
 
 void Shmoose::intialSetupOnFirstConnection()
 {
-#if 0
     // Request the roster
     rosterController_->setupWithClient(client_);
-    rosterController_->requestRoster();
+#if 0
 
     // pass the client pointer to the httpFileUploadManager
     httpFileUploadManager_->setupWithClient(client_);
@@ -249,22 +255,20 @@ void Shmoose::intialSetupOnFirstConnection()
 
 void Shmoose::setCurrentChatPartner(QString const &jid)
 {
-    //persistence_->setCurrentChatPartner(jid);
+    persistence_->setCurrentChatPartner(jid);
 
     sendReadNotification(true);
 }
 
 QString Shmoose::getCurrentChatPartner()
 {
-    //return persistence_->getCurrentChatPartner();
+    return persistence_->getCurrentChatPartner();
 }
 
 void Shmoose::sendMessage(QString const &toJid, QString const &message, QString const &type)
 {
-    //bool isGroup = rosterController_->isGroup(toJid);
-    //messageHandler_->sendMessage(toJid, message, type, isGroup);
-
-    messageHandler_->sendMessage(toJid, message, type, false);
+    bool isGroup = rosterController_->isGroup(toJid);
+    messageHandler_->sendMessage(toJid, message, type, isGroup);
 }
 
 void Shmoose::sendMessage(QString const &message, QString const &type)
@@ -273,9 +277,8 @@ void Shmoose::sendMessage(QString const &message, QString const &type)
 
     if (! toJid.isEmpty())
     {
-        //bool isGroup = rosterController_->isGroup(toJid);
-        //messageHandler_->sendMessage(toJid, message, type, isGroup);
-        messageHandler_->sendMessage(toJid, message, type, false);
+        bool isGroup = rosterController_->isGroup(toJid);
+        messageHandler_->sendMessage(toJid, message, type, isGroup);
     }
     else
     {
@@ -330,7 +333,6 @@ void Shmoose::sendReadNotification(bool active)
 #endif
 }
 
-#if 0
 RosterController* Shmoose::getRosterController()
 {
     return rosterController_;
@@ -340,7 +342,6 @@ Persistence* Shmoose::getPersistence()
 {
     return persistence_;
 }
-#endif
 
 Settings* Shmoose::getSettings()
 {

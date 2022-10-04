@@ -14,15 +14,15 @@ INCLUDEPATH += ../qxmpp-sfos/build/src/base/
 
 
 INCLUDEPATH += source
-#INCLUDEPATH += source/persistence
-#INCLUDEPATH += source/xep/httpFileUpload
+INCLUDEPATH += source/persistence
+INCLUDEPATH += source/xep/httpFileUpload
 #INCLUDEPATH += source/xep/mam
 #INCLUDEPATH += source/xep/xmppPing
-#INCLUDEPATH += source/xep/chatMarkers
+INCLUDEPATH += source/xep/chatMarkers
 #INCLUDEPATH += source/xep/stanzaId
 #INCLUDEPATH += source/room
 #INCLUDEPATH += source/networkconnection
-#INCLUDEPATH += source/contacts
+INCLUDEPATH += source/contacts
 INCLUDEPATH += source/base
 
 ! contains(DEFINES, SFOS) {
@@ -40,7 +40,7 @@ contains(DEFINES, SFOS) {
 }
 
 QMAKE_CXXFLAGS += -std=c++17
-LIBS += -L ../qxmpp-sfos/build/src -lqxmpp
+LIBS += -L ../qxmpp-sfos/build/src -lqxmpp -lgcrypt
 
 DEFINES += BOOST_SIGNALS_NO_DEPRECATION_WARNING
 
@@ -71,20 +71,20 @@ SOURCES += \
     source/base/Shmoose.cpp \
     source/base/System.cpp \
 #    source/base/XmlProcessor.cpp \
-#    source/persistence/Database.cpp \
-#    source/persistence/MessageController.cpp \
-#    source/persistence/SessionController.cpp \
-#    source/persistence/GcmController.cpp \
-#    source/persistence/Persistence.cpp \
+    source/persistence/Database.cpp \
+    source/persistence/MessageController.cpp \
+    source/persistence/SessionController.cpp \
+    source/persistence/GcmController.cpp \
+    source/persistence/Persistence.cpp \
 #    source/xep/httpFileUpload/XmlHttpUploadContentHandler.cpp \
 #    source/xep/httpFileUpload/HttpFileuploader.cpp \
 #    source/xep/httpFileUpload/HttpFileUploadManager.cpp \
-#    source/xep/httpFileUpload/DownloadManager.cpp \
-#    source/xep/httpFileUpload/ImageProcessing.cpp \
-#    source/xep/httpFileUpload/FileWithCypher.cpp \
+    source/xep/httpFileUpload/DownloadManager.cpp \
+    source/xep/httpFileUpload/ImageProcessing.cpp \
+    source/xep/httpFileUpload/FileWithCypher.cpp \
 #    source/xep/mam/MamManager.cpp \
 #    source/xep/xmppPing/XmppPingController.cpp \
-#    source/xep/chatMarkers/ChatMarkers.cpp \
+    source/xep/chatMarkers/ChatMarkers.cpp \
 #    source/xep/stanzaId/StanzaId.cpp \
 #    source/xep/stanzaId/StanzaIdPayload.cpp \
 #    source/xep/stanzaId/StanzaIdPayloadParser.cpp \
@@ -96,9 +96,9 @@ SOURCES += \
 #    source/networkconnection/IpHeartBeatWatcher.cpp \
 #    source/networkconnection/ReConnectionHandler.cpp \
 #    source/contacts/PresenceHandler.cpp \
-#    source/contacts/RosterItem.cpp \
-#    source/contacts/RosterController.cpp \
-#    source/base/CryptoHelper.cpp \
+    source/contacts/RosterItem.cpp \
+    source/contacts/RosterController.cpp \
+    source/base/CryptoHelper.cpp \
     source/base/XmppClient.cpp
 
 HEADERS += source/base/Shmoose.h \
@@ -109,22 +109,22 @@ HEADERS += source/base/Shmoose.h \
 #    source/base/XmlWriter.h \
     source/base/System.h \
 #    source/base/XmlProcessor.h \
-#    source/persistence/Database.h \
-#    source/persistence/MessageController.h \
-#    source/persistence/SessionController.h \
-#    source/persistence/GcmController.h \
-#    source/persistence/Persistence.h \
+    source/persistence/Database.h \
+    source/persistence/MessageController.h \
+    source/persistence/SessionController.h \
+    source/persistence/GcmController.h \
+    source/persistence/Persistence.h \
 #    source/xep/httpFileUpload/XmlHttpUploadContentHandler.h \
 #    source/xep/httpFileUpload/HttpFileuploader.h \
 #    source/xep/httpFileUpload/HttpFileUploadManager.h \
-#    source/xep/httpFileUpload/DownloadManager.h \
-#    source/xep/httpFileUpload/ImageProcessing.h \
-#    source/xep/httpFileUpload/FileWithCypher.h \
+    source/xep/httpFileUpload/DownloadManager.h \
+    source/xep/httpFileUpload/ImageProcessing.h \
+    source/xep/httpFileUpload/FileWithCypher.h \
 #    source/xep/mam/MamManager.h \
 #    source/xep/mam/MamRequest.h \
 #    source/xep/xmppPing/PingRequest.h \
 #    source/xep/xmppPing/XmppPingController.h \
-#    source/xep/chatMarkers/ChatMarkers.h \
+    source/xep/chatMarkers/ChatMarkers.h \
 #    source/xep/stanzaId/StanzaId.h \
 #    source/xep/stanzaId/StanzaIdPayload.h \
 #    source/xep/stanzaId/StanzaIdPayloadParser.h \
@@ -135,10 +135,10 @@ HEADERS += source/base/Shmoose.h \
 #    source/networkconnection/ConnectionHandler.h \
 #    source/networkconnection/IpHeartBeatWatcher.h \
 #    source/networkconnection/ReConnectionHandler.h \
-#    source/contacts/PresenceHandler.h \
-#    source/contacts/RosterItem.h \
-#    source/contacts/RosterController.h \
-#    source/base/CryptoHelper.h \
+#     source/contacts/PresenceHandler.h \
+    source/contacts/RosterItem.h \
+    source/contacts/RosterController.h \
+    source/base/CryptoHelper.h \
     source/base/XmppClient.h
 
 lupdate_only {
