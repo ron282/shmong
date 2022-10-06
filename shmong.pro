@@ -8,10 +8,12 @@ contains(DEFINES, DBUS) {
     QT += dbus
 }
 
-INCLUDEPATH += ../qxmpp-sfos/src/client/
-INCLUDEPATH += ../qxmpp-sfos/src/base/
-INCLUDEPATH += ../qxmpp-sfos/build/src/base/
 
+QXMPPPATH = $$_PRO_FILE_PWD_/../qxmpp-sfos
+INCLUDEPATH += $${QXMPPPATH}/src/base
+INCLUDEPATH += $${QXMPPPATH}/src/client
+INCLUDEPATH += $${QXMPPPATH}/build_arm/src/base
+LIBS += $${QXMPPPATH}/build_arm/src/libqxmpp.a
 
 INCLUDEPATH += source
 INCLUDEPATH += source/persistence
@@ -40,7 +42,7 @@ contains(DEFINES, SFOS) {
 }
 
 QMAKE_CXXFLAGS += -std=c++17
-LIBS += -L ../qxmpp-sfos/build/src -lqxmpp -lgcrypt
+LIBS += -L ../qxmpp-sfos/build_arm/src -lgcrypt
 
 DEFINES += BOOST_SIGNALS_NO_DEPRECATION_WARNING
 

@@ -1,7 +1,6 @@
 #include "Shmoose.h"
 
 #include <iostream>
-#include <boost/bind.hpp>
 
 #include <QtConcurrent>
 #include <QDateTime>

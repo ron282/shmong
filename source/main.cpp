@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
 #ifdef SFOS
     view->rootContext()->setContextProperty("shmoose", &shmoose);
-    view->rootContext()->setContextProperty("fileModel", &fileModel);
+    //view->rootContext()->setContextProperty("fileModel", &fileModel);
 
     view->setSource(SailfishApp::pathTo("qml/main.qml"));
     view->showFullScreen();
