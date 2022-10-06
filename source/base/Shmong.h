@@ -22,7 +22,7 @@ class StanzaId;
 #endif
 class MessageHandler;
 
-class Shmoose : public QObject
+class Shmong : public QObject
 {
     Q_OBJECT
 
@@ -32,8 +32,8 @@ class Shmoose : public QObject
     Q_PROPERTY(Settings* settings READ getSettings NOTIFY settingsChanged)
 
 public:
-    Shmoose(QObject *parent = 0);
-    ~Shmoose();
+    Shmong(QObject *parent = 0);
+    ~Shmong();
 
     Q_INVOKABLE void mainDisconnect();
     Q_INVOKABLE void mainConnect(const QString &jid, const QString &pass);

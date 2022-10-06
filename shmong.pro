@@ -70,7 +70,7 @@ SOURCES += \
 #    source/base/DiscoInfoHandler.cpp \
 #    source/base/FileModel.cpp \
 #    source/base/XmlWriter.cpp \
-    source/base/Shmoose.cpp \
+    source/base/Shmong.cpp \
     source/base/System.cpp \
 #    source/base/XmlProcessor.cpp \
     source/persistence/Database.cpp \
@@ -103,7 +103,7 @@ SOURCES += \
     source/base/CryptoHelper.cpp \
     source/base/XmppClient.cpp
 
-HEADERS += source/base/Shmoose.h \
+HEADERS += source/base/Shmong.h \
     source/base/Settings.h \
     source/base/MessageHandler.h \
 #    source/base/DiscoInfoHandler.h \

@@ -10,7 +10,7 @@
 #include <QLocale>
 #include <QTranslator>
 
-#include "Shmoose.h"
+#include "Shmong.h"
 #include "RosterController.h"
 #include "RosterItem.h"
 #include "Persistence.h"
@@ -31,10 +31,10 @@
 
 int main(int argc, char *argv[])
 {
-    qmlRegisterType<RosterController>( "harbour.shmoose", 1, 0, "RosterController");
-    qmlRegisterType<RosterItem>( "harbour.shmoose", 1, 0, "RosterItem");
+    qmlRegisterType<RosterController>( "harbour.shmong", 1, 0, "RosterController");
+    qmlRegisterType<RosterItem>( "harbour.shmong", 1, 0, "RosterItem");
 
-    qmlRegisterType<Shmoose>( "harbour.shmoose", 1, 0, "Shmoose");
+    qmlRegisterType<Shmong>( "harbour.shmong", 1, 0, "Shmong");
     qRegisterMetaType<Settings*>("Settings*");
 
     qRegisterMetaType<Persistence*>("Persistence*");
@@ -57,36 +57,36 @@ int main(int argc, char *argv[])
 
 #ifndef SFOS
     // only needed on Desktop for file picker dialog. On SFOS defaults are already used and config gets written there.
-    pApp->setOrganizationName("shmoose");
+    pApp->setOrganizationName("shmong");
     pApp->setOrganizationDomain("harbour");
 #endif
 
     // i18n
 #ifdef SFOS
-    QTranslator shmooseTranslator;
+    QTranslator shmongTranslator;
     QString locale = QLocale::system().name();
-    if(!shmooseTranslator.load(SailfishApp::pathTo("translations").toLocalFile() + "/" + locale + ".qm"))
+    if(!shmongTranslator.load(SailfishApp::pathTo("translations").toLocalFile() + "/" + locale + ".qm"))
     {
         qDebug() << "Couldn't load translation";
     }
 
-    pApp->installTranslator(&shmooseTranslator);
+    pApp->installTranslator(&shmongTranslator);
 #endif
 
     // eventloop
-    Shmoose shmoose;
+    Shmong shmong;
 
     //FileModel fileModel;
 
 #ifdef SFOS
-    view->rootContext()->setContextProperty("shmoose", &shmoose);
+    view->rootContext()->setContextProperty("shmong", &shmong);
     //view->rootContext()->setContextProperty("fileModel", &fileModel);
 
     view->setSource(SailfishApp::pathTo("qml/main.qml"));
     view->showFullScreen();
 #else
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("shmoose", &shmoose);
+    engine.rootContext()->setContextProperty("shmong", &shmong);
 #ifdef QMLLIVE_SOURCE
     engine.load("source/qml/main.qml");
 #else

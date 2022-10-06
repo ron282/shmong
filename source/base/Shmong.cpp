@@ -1,4 +1,4 @@
-#include "Shmoose.h"
+#include "Shmong.h"
 
 #include <iostream>
 
@@ -35,7 +35,7 @@
 
 #include "System.h"
 
-Shmoose::Shmoose(QObject *parent) : QObject(parent),
+Shmong::Shmong(QObject *parent) : QObject(parent),
     client_(new XmppClient(this)),
     rosterController_(new RosterController(this)),
     persistence_(new Persistence(this)),
@@ -55,7 +55,7 @@ Shmoose::Shmoose(QObject *parent) : QObject(parent),
     qApp->setApplicationVersion(version_);
 
     // FIXME make sure that this is not triggered after a reconnect!
-    connect(client_, &QXmppClient::connected, this, &Shmoose::intialSetupOnFirstConnection);
+    connect(client_, &QXmppClient::connected, this, &Shmong::intialSetupOnFirstConnection);
 
 #if 0
     connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
@@ -102,9 +102,9 @@ Shmoose::Shmoose(QObject *parent) : QObject(parent),
 #endif
 }
 
-Shmoose::~Shmoose()
+Shmong::~Shmong()
 {
-    qDebug() << "Shmoose::~Shmoose";
+    qDebug() << "Shmong::~Shmong";
 
 #if 0
     if (connectionHandler_->isConnected())
@@ -118,7 +118,7 @@ Shmoose::~Shmoose()
 #endif
 }
 
-void Shmoose::slotAboutToQuit()
+void Shmong::slotAboutToQuit()
 {
 #if 0
     if (connectionHandler_->isConnected())
@@ -128,7 +128,7 @@ void Shmoose::slotAboutToQuit()
 #endif
 }
 
-void Shmoose::mainConnect(const QString &jid, const QString &pass)
+void Shmong::mainConnect(const QString &jid, const QString &pass)
 {
     qDebug() << "main connect " << jid;
     persistence_->openDatabaseForJid(jid);
@@ -204,7 +204,7 @@ void Shmoose::mainConnect(const QString &jid, const QString &pass)
     qDebug() << "main end " << jid;
 }
 
-void Shmoose::mainDisconnect()
+void Shmong::mainDisconnect()
 {
     if (connectionState())
     {
@@ -212,7 +212,7 @@ void Shmoose::mainDisconnect()
     }
 }
 
-void Shmoose::reConnect()
+void Shmong::reConnect()
 {
 #if 0
     if (client_ != nullptr)
@@ -222,7 +222,7 @@ void Shmoose::reConnect()
 #endif
 }
 
-void Shmoose::intialSetupOnFirstConnection()
+void Shmong::intialSetupOnFirstConnection()
 {
     // Request the roster
     rosterController_->setupWithClient(client_);
@@ -252,25 +252,25 @@ void Shmoose::intialSetupOnFirstConnection()
     settings_->setPassword(password_);
 }
 
-void Shmoose::setCurrentChatPartner(QString const &jid)
+void Shmong::setCurrentChatPartner(QString const &jid)
 {
     persistence_->setCurrentChatPartner(jid);
 
     sendReadNotification(true);
 }
 
-QString Shmoose::getCurrentChatPartner()
+QString Shmong::getCurrentChatPartner()
 {
     return persistence_->getCurrentChatPartner();
 }
 
-void Shmoose::sendMessage(QString const &toJid, QString const &message, QString const &type)
+void Shmong::sendMessage(QString const &toJid, QString const &message, QString const &type)
 {
     bool isGroup = rosterController_->isGroup(toJid);
     messageHandler_->sendMessage(toJid, message, type, isGroup);
 }
 
-void Shmoose::sendMessage(QString const &message, QString const &type)
+void Shmong::sendMessage(QString const &message, QString const &type)
 {
     const QString toJid = getCurrentChatPartner();
 
@@ -286,7 +286,7 @@ void Shmoose::sendMessage(QString const &message, QString const &type)
 }
 
 
-void Shmoose::sendFile(QString const &toJid, QString const &file)
+void Shmong::sendFile(QString const &toJid, QString const &file)
 {
 #if 0
     bool shouldEncryptFile = settings_->getSoftwareFeatureOmemoEnabled() && lurchAdapter_->isOmemoUser(toJid) && (! settings_->getSendPlainText().contains(toJid));
@@ -311,7 +311,7 @@ void Shmoose::sendFile(QString const &toJid, QString const &file)
 #endif
 }
 
-void Shmoose::sendFile(QUrl const &file)
+void Shmong::sendFile(QUrl const &file)
 {
     const QString toJid = getCurrentChatPartner();
     QString localFile = file.toLocalFile();
@@ -320,7 +320,7 @@ void Shmoose::sendFile(QUrl const &file)
 }
 
 
-void Shmoose::sendReadNotification(bool active)
+void Shmong::sendReadNotification(bool active)
 {
 #if 0
     QString currentChatPartner = persistence_->getCurrentChatPartner();
@@ -332,43 +332,43 @@ void Shmoose::sendReadNotification(bool active)
 #endif
 }
 
-RosterController* Shmoose::getRosterController()
+RosterController* Shmong::getRosterController()
 {
     return rosterController_;
 }
 
-Persistence* Shmoose::getPersistence()
+Persistence* Shmong::getPersistence()
 {
     return persistence_;
 }
 
-Settings* Shmoose::getSettings()
+Settings* Shmong::getSettings()
 {
     return settings_;
 }
 
-bool Shmoose::connectionState() const
+bool Shmong::connectionState() const
 {
     //return connectionHandler_->isConnected();
 }
 
-bool Shmoose::canSendFile()
+bool Shmong::canSendFile()
 {
     //return httpFileUploadManager_->getServerHasFeatureHttpUpload();
 }
 
-bool Shmoose::isOmemoUser(const QString& jid)
+bool Shmong::isOmemoUser(const QString& jid)
 {
     //return lurchAdapter_->isOmemoUser(jid);
     return false;
 }
 
-QString Shmoose::getAttachmentPath()
+QString Shmong::getAttachmentPath()
 {
     return System::getAttachmentPath();
 }
 
-QString Shmoose::getLocalFileForUrl(const QString& str)
+QString Shmong::getLocalFileForUrl(const QString& str)
 {
 #if 0
     QUrl url(str);
@@ -390,27 +390,27 @@ QString Shmoose::getLocalFileForUrl(const QString& str)
 #endif
 }
 
-void Shmoose::downloadFile(const QString& str, const QString& msgId)
+void Shmong::downloadFile(const QString& str, const QString& msgId)
 {
     messageHandler_->downloadFile(str, msgId);
 }
 
-void Shmoose::setHasInetConnection(bool connected)
+void Shmong::setHasInetConnection(bool connected)
 {
     //connectionHandler_->setHasInetConnection(connected);
 }
 
-void Shmoose::setAppIsActive(bool active)
+void Shmong::setAppIsActive(bool active)
 {
     emit signalAppGetsActive(active);
 }
 
-QString Shmoose::getVersion()
+QString Shmong::getVersion()
 {
     return version_;
 }
 
-void Shmoose::joinRoom(QString const &roomJid, QString const &roomName)
+void Shmong::joinRoom(QString const &roomJid, QString const &roomName)
 {
 #if 0
     Swift::JID jid(roomJid.toStdString());
@@ -427,18 +427,18 @@ void Shmoose::joinRoom(QString const &roomJid, QString const &roomName)
 #endif
 }
 
-void Shmoose::removeRoom(QString const &roomJid)
+void Shmong::removeRoom(QString const &roomJid)
 {
     //mucManager_->removeRoom(roomJid);
 }
 
-void Shmoose::attachmentUploadFailed()
+void Shmong::attachmentUploadFailed()
 {
     //persistence_->markMessageAsSendFailed(notSentMsgId_);
     notSentMsgId_ = "";
 }
 
-void Shmoose::saveAttachment(const QString& msg)
+void Shmong::saveAttachment(const QString& msg)
 {
 #if 0
     //TODO Error management + Destination selection
@@ -447,7 +447,7 @@ void Shmoose::saveAttachment(const QString& msg)
 #endif
 }
 
-void Shmoose::fileUploaded(QString const&toJid, QString const&message, QString const&type)
+void Shmong::fileUploaded(QString const&toJid, QString const&message, QString const&type)
 {
 #if 0
     persistence_->removeMessage(notSentMsgId_, toJid);
@@ -456,7 +456,7 @@ void Shmoose::fileUploaded(QString const&toJid, QString const&message, QString c
 #endif
 }
 
-unsigned int Shmoose::getMaxUploadSize()
+unsigned int Shmong::getMaxUploadSize()
 {
     //return httpFileUploadManager_->getMaxFileSize();
 }
