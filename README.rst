@@ -40,6 +40,7 @@ Build Qxmpp::
 * git clone https://github.com/geobra/qxmpp-sfos
 * cd qxmpp-sfos
 * patch -p1 < sfos.diff
+* mkdir build_arm && cd build_arm
 * sb2 -t SailfishOS-4.2.0.21-aarch64 cmake -DBUILD_EXAMPLES=false -DBUILD_TESTS=false -DBUILD_OMEMO=true ..
 * sb2 -t SailfishOS-4.2.0.21-aarch64 make
 
