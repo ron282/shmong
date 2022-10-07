@@ -12,20 +12,20 @@ Page {
         spacing: Theme.paddingLarge
 
         PageHeader {
-            title: qsTr("Shmoose - Xmpp Client")
+            title: qsTr("ShmoNG - Xmpp Client")
         }
 
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
             fillMode: Image.PreserveAspectFit
-            source: "/usr/share/harbour-shmoose/icons/86x86/harbour-shmoose.png"
+            source: "/usr/share/harbour-shmong/icons/86x86/harbour-shmong.png"
         }
 
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.secondaryColor
-            text: qsTr("Version") + " " + shmoose.getVersion()
+            text: qsTr("Version") + " " + shmong.getVersion()
         }
 
         Label {
@@ -43,7 +43,7 @@ Page {
         anchors.bottomMargin: Theme.paddingSmall
         color: Theme.secondaryColor
         font.pixelSize: Theme.fontSizeExtraSmall
-        text: "https://github.com/geobra/harbour-shmoose"
+        text: "https://github.com/geobra/harbour-shmong"
     }
 }
 

@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import harbour.shmong 1.0
 
 CoverBackground {
     Column {
@@ -18,7 +19,7 @@ CoverBackground {
             horizontalAlignment: Text.AlignHCenter
             font.family: Theme.fontFamilyHeading
             color: Theme.primaryColor
-            text: "Shmoose"
+            text: "ShmoNG"
         }
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -36,7 +37,7 @@ CoverBackground {
             anchors.horizontalCenter: parent.horizontalCenter
             font.family: Theme.fontFamily
             color: {
-                if (shmoose.connectionState && mainWindow.hasInetConnection) {
+                if (shmong.connectionState && mainWindow.hasInetConnection) {
                     return "green"
                 }
                 else {
@@ -44,7 +45,7 @@ CoverBackground {
                 }
             }
             text: {
-                if (shmoose.connectionState && mainWindow.hasInetConnection) {
+                if (shmong.connectionState && mainWindow.hasInetConnection) {
                     return qsTr("connected")
                 }
                 else {
@@ -64,7 +65,7 @@ CoverBackground {
         }
 
         Connections {
-            target: shmoose.persistence.messageController
+            target: shmong.persistence.messageController
             onSignalMessageReceived: {
                 if (applicationActive == false) {
                     cover.unreadMessages++

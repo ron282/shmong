@@ -3,17 +3,23 @@ TARGET = shmong
 TEMPLATE = app
 QT += qml quick core sql xml concurrent
 
+LBUILD = build
+
 contains(DEFINES, DBUS) {
     CONFIG += console
     QT += dbus
+}
+
+contains(DEFINES, SFOS) {
+    LBUILD = build_arm
 }
 
 
 QXMPPPATH = $$_PRO_FILE_PWD_/../qxmpp-sfos
 INCLUDEPATH += $${QXMPPPATH}/src/base
 INCLUDEPATH += $${QXMPPPATH}/src/client
-INCLUDEPATH += $${QXMPPPATH}/build/src/base
-LIBS += $${QXMPPPATH}/build/src/libqxmpp.a
+INCLUDEPATH += $${QXMPPPATH}/$${LBUILD}/src/base
+LIBS += $${QXMPPPATH}/$${LBUILD}/src/libqxmpp.a
 
 INCLUDEPATH += source
 INCLUDEPATH += source/persistence
@@ -23,7 +29,7 @@ INCLUDEPATH += source/xep/httpFileUpload
 INCLUDEPATH += source/xep/chatMarkers
 #INCLUDEPATH += source/xep/stanzaId
 #INCLUDEPATH += source/room
-#INCLUDEPATH += source/networkconnection
+INCLUDEPATH += source/networkconnection
 INCLUDEPATH += source/contacts
 INCLUDEPATH += source/base
 
@@ -94,9 +100,9 @@ SOURCES += \
 #    source/xep/stanzaId/StanzaIdPayloadSerializer.cpp \
 #    source/room/MucManager.cpp \
 #    source/room/MucCollection.cpp \
-#    source/networkconnection/ConnectionHandler.cpp \
-#    source/networkconnection/IpHeartBeatWatcher.cpp \
-#    source/networkconnection/ReConnectionHandler.cpp \
+    source/networkconnection/ConnectionHandler.cpp \
+    source/networkconnection/IpHeartBeatWatcher.cpp \
+    source/networkconnection/ReConnectionHandler.cpp \
 #    source/contacts/PresenceHandler.cpp \
     source/contacts/RosterItem.cpp \
     source/contacts/RosterController.cpp \
@@ -134,9 +140,9 @@ HEADERS += source/base/Shmong.h \
 #    source/xep/stanzaId/StanzaIdPayloadSerializer.h \
 #    source/room/MucManager.h \
 #    source/room/MucCollection.h \
-#    source/networkconnection/ConnectionHandler.h \
-#    source/networkconnection/IpHeartBeatWatcher.h \
-#    source/networkconnection/ReConnectionHandler.h \
+    source/networkconnection/ConnectionHandler.h \
+    source/networkconnection/IpHeartBeatWatcher.h \
+    source/networkconnection/ReConnectionHandler.h \
 #     source/contacts/PresenceHandler.h \
     source/contacts/RosterItem.h \
     source/contacts/RosterController.h \

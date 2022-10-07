@@ -1,12 +1,12 @@
-#ifndef CONNECTIONHANDLER_H
-#define CONNECTIONHANDLER_H
+#pragma once
+
+#include <XmppClient.h>
 
 #include <QObject>
-#include <Swiften/Swiften.h>
 
 class ReConnectionHandler;
 class IpHeartBeatWatcher;
-class XmppPingController;
+//class XmppPingController;
 
 class ConnectionHandler : public QObject
 {
@@ -15,7 +15,7 @@ public:
     explicit ConnectionHandler(QObject *parent = 0);
     ~ConnectionHandler();
 
-    void setupWithClient(Swift::Client* client);
+    void setupWithClient(XmppClient* client);
     void setHasInetConnection(bool connected);
 
     bool isConnected();
@@ -32,22 +32,19 @@ public slots:
 
 private slots:
     void tryReconnect();
+    void handleConnected();
+    void handleDisconnected();
+    void errorReceived(QXmppClient::Error error);
 
 private:
-    void handleConnected();
-    void handleDisconnected(const boost::optional<Swift::ClientError> &error);
-    void handleCarbonsReply(Swift::Payload::ref, Swift::ErrorPayload::ref error);
-    void enableMessageCarbons();
-
     bool connected_;
     bool initialConnectionSuccessfull_;
     bool hasInetConnection_;
     bool appIsActive_;
+    QXmppClient::Error clientError_{QXmppClient::Error::NoError};
 
-    Swift::Client* client_{nullptr};
+    XmppClient* client_{nullptr};
     ReConnectionHandler *reConnectionHandler_;
     IpHeartBeatWatcher *ipHeartBeatWatcher_;
-    XmppPingController *xmppPingController_;
+    //XmppPingController *xmppPingController_;
 };
-
-#endif // CONNECTIONHANDLER_H

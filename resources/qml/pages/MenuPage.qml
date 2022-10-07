@@ -16,7 +16,7 @@ Page {
             }
 
             PageHeader {
-                title: "Shmoose";
+                title: "shmong";
             }
             Image {
                 id: img;
@@ -26,7 +26,7 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter;
             }
             Label {
-                text: shmoose.settings.Jid;
+                text: shmong.settings.Jid;
                 font.pixelSize: Theme.fontSizeLarge;
                 anchors {
                     left: parent.left;

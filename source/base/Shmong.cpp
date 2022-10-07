@@ -14,15 +14,15 @@
 #include "RosterController.h"
 #include "Persistence.h"
 #include "MessageController.h"
+#include "ConnectionHandler.h"
+#include "CryptoHelper.h"
 
 #if 0
 #include "ChatMarkers.h"
-#include "ConnectionHandler.h"
 #include "HttpFileUploadManager.h"
 #include "MamManager.h"
 #include "MucManager.h"
 #include "DiscoInfoHandler.h"
-#include "CryptoHelper.h"
 #include "StanzaId.h"
 #include "Settings.h"
 #endif
@@ -41,7 +41,7 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     persistence_(new Persistence(this)),
     settings_(new Settings(this)),
 //    stanzaId_(new StanzaId(this)),
-//    connectionHandler_(new ConnectionHandler(this)),
+    connectionHandler_(new ConnectionHandler(this)),
 //    messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, lurchAdapter_, this)),
 //    httpFileUploadManager_(new HttpFileUploadManager(this)),
     messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, this)),
@@ -54,12 +54,9 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
 {
     qApp->setApplicationVersion(version_);
 
-    // FIXME make sure that this is not triggered after a reconnect!
-    connect(client_, &QXmppClient::connected, this, &Shmong::intialSetupOnFirstConnection);
+    connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
 
 #if 0
-    connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
-
     connect(httpFileUploadManager_, SIGNAL(fileUploadedForJidToUrl(QString,QString,QString)),
             this, SLOT(fileUploaded(QString,QString,QString)));
     connect(httpFileUploadManager_, SIGNAL(fileUploadFailedForJidToUrl()), 
@@ -77,7 +74,6 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     connect(this, SIGNAL(signalAppGetsActive(bool)), this, SLOT(sendReadNotification(bool)));
 
     // inform connectionHandler and messageHandler about app status
-#if 0
     connect(this, SIGNAL(signalAppGetsActive(bool)), connectionHandler_, SLOT(slotAppGetsActive(bool)));
     connect(this, SIGNAL(signalAppGetsActive(bool)), messageHandler_, SLOT(slotAppGetsActive(bool)));
 
@@ -85,6 +81,7 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     connect(connectionHandler_, SIGNAL(signalHasInetConnection(bool)), this, SIGNAL(signalHasInetConnection(bool)));
     connect(connectionHandler_, SIGNAL(connectionStateChanged()), this, SIGNAL(connectionStateChanged()));
 
+#if 0
     // show errors to user
     connect(mucManager_, SIGNAL(signalShowMessage(QString,QString)), this, SIGNAL(signalShowMessage(QString,QString)));
     connect(rosterController_, SIGNAL(signalShowMessage(QString,QString)), this, SIGNAL(signalShowMessage(QString,QString)));
@@ -144,14 +141,10 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 #endif
 
     // setup the xmpp client
-
-#if 0
-    stanzaId_->setupWithClient(client_);
     connectionHandler_->setupWithClient(client_);
-#endif
     messageHandler_->setupWithClient(client_);
 #if 0
-
+    stanzaId_->setupWithClient(client_);
 
     // configure the xmpp client
     softwareVersionResponder_ = new Swift::SoftwareVersionResponder(client_->getIQRouter());
@@ -189,7 +182,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     // finaly try to connect
 #endif
 
-    client_->logger()->setLoggingType(QXmppLogger::FileLogging);
+    client_->logger()->setLoggingType(QXmppLogger::StdoutLogging);
     client_->connectToServer(jid, pass);
 
     // for saving on connection success
@@ -349,12 +342,13 @@ Settings* Shmong::getSettings()
 
 bool Shmong::connectionState() const
 {
-    //return connectionHandler_->isConnected();
+    return connectionHandler_->isConnected();
 }
 
 bool Shmong::canSendFile()
 {
     //return httpFileUploadManager_->getServerHasFeatureHttpUpload();
+    return false;
 }
 
 bool Shmong::isOmemoUser(const QString& jid)
@@ -370,7 +364,7 @@ QString Shmong::getAttachmentPath()
 
 QString Shmong::getLocalFileForUrl(const QString& str)
 {
-#if 0
+
     QUrl url(str);
 
     if(url.isRelative())
@@ -387,7 +381,6 @@ QString Shmong::getLocalFileForUrl(const QString& str)
         else
             return "";
     }
-#endif
 }
 
 void Shmong::downloadFile(const QString& str, const QString& msgId)
@@ -397,7 +390,7 @@ void Shmong::downloadFile(const QString& str, const QString& msgId)
 
 void Shmong::setHasInetConnection(bool connected)
 {
-    //connectionHandler_->setHasInetConnection(connected);
+    connectionHandler_->setHasInetConnection(connected);
 }
 
 void Shmong::setAppIsActive(bool active)

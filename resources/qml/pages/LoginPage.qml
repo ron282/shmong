@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.shmoose 1.0
+import harbour.shmong 1.0
 
 Page {
     id: loginPage
@@ -19,7 +19,7 @@ Page {
             spacing: Theme.paddingSmall
 
             PageHeader {
-                title: qsTr("Welcome to Shmoose")
+                title: qsTr("Welcome to ShmoNG")
             }
 
             Label {
@@ -36,7 +36,7 @@ Page {
                 id: jidTextField
                 placeholderText: qsTr("jid@server.com")
                 label: qsTr("JID")
-                text: shmoose.settings.Jid
+                text: shmong.settings.Jid
                 width: parent.width
 
                 onTextChanged: {
@@ -49,7 +49,7 @@ Page {
                 placeholderText: qsTr("password")
                 echoMode: TextInput.Password
                 label: qsTr("Password")
-                text: shmoose.settings.Password
+                text: shmong.settings.Password
                 width: parent.width
 
                 onTextChanged: {
@@ -61,9 +61,9 @@ Page {
                 width: parent.width
                 Switch {
                     id: saveCredentials
-                    checked: shmoose.settings.SaveCredentials
+                    checked: shmong.settings.SaveCredentials
                     onClicked: {
-                        shmoose.settings.SaveCredentials = saveCredentials.checked;
+                        shmong.settings.SaveCredentials = saveCredentials.checked;
                     }
                 }
                 Label {
@@ -86,7 +86,7 @@ Page {
                 onClicked: {
                     connectButton.enabled = false;
                     connectButton.text = qsTr("Connecting...");
-                    shmoose.mainConnect(jidTextField.text, passTextField.text);
+                    shmong.mainConnect(jidTextField.text, passTextField.text);
                 }
 
             }
@@ -95,9 +95,9 @@ Page {
 
 
     Connections {
-        target: shmoose
+        target: shmong
         onConnectionStateChanged: {
-            if (shmoose.connectionState == true) {
+            if (shmong.connectionState == true) {
                 pageStack.replace(pageMenu)
             }
             else {

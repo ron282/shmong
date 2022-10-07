@@ -1,9 +1,8 @@
 #include "ConnectionHandler.h"
 #include "ReConnectionHandler.h"
 #include "IpHeartBeatWatcher.h"
-#include "XmppPingController.h"
-
-#include <boost/bind.hpp>
+//#include "XmppPingController.h"
+#include "Settings.h"
 
 #include <QTime>
 #include <QDebug>
@@ -11,8 +10,8 @@
 ConnectionHandler::ConnectionHandler(QObject *parent) : QObject(parent),
     connected_(false), initialConnectionSuccessfull_(false), hasInetConnection_(false), appIsActive_(false),
     reConnectionHandler_(new ReConnectionHandler(30000, this)),
-    ipHeartBeatWatcher_(new IpHeartBeatWatcher(this)),
-    xmppPingController_(new XmppPingController())
+    ipHeartBeatWatcher_(new IpHeartBeatWatcher(this))
+    //xmppPingController_(new XmppPingController())
 {
     connect(reConnectionHandler_, SIGNAL(canTryToReconnect()), this, SLOT(tryReconnect()));
 
@@ -30,7 +29,7 @@ ConnectionHandler::ConnectionHandler(QObject *parent) : QObject(parent),
 
 ConnectionHandler::~ConnectionHandler()
 {
-    delete xmppPingController_;
+    //delete xmppPingController_;
 
     ipHeartBeatWatcher_->stopWatching();
 #ifdef SFOS
@@ -38,16 +37,17 @@ ConnectionHandler::~ConnectionHandler()
 #endif
 }
 
-void ConnectionHandler::setupWithClient(Swift::Client* client)
+void ConnectionHandler::setupWithClient(XmppClient *client)
 {
     if (client != nullptr)
     {
         client_ = client;
 
-        client_->onConnected.connect(boost::bind(&ConnectionHandler::handleConnected, this));
-        client_->onDisconnected.connect(boost::bind(&ConnectionHandler::handleDisconnected, this, _1));
+        connect(client_, &QXmppClient::connected, this, &ConnectionHandler::handleConnected);
+        connect(client_, &QXmppClient::disconnected, this, &ConnectionHandler::handleDisconnected);
+        connect(client_, &QXmppClient::error, this, &ConnectionHandler::errorReceived);
 
-        xmppPingController_->setupWithClient(client_);
+        //xmppPingController_->setupWithClient(client_);
     }
 }
 
@@ -68,38 +68,25 @@ void ConnectionHandler::handleConnected()
         emit signalInitialConnectionEstablished();
     }
 
-    client_->getPresenceSender()->sendPresence(Swift::Presence::create("Send me a message"));
-
-    // message carbons request must be made each time a connection is established
-    enableMessageCarbons();
+    // FIXME
+    //client_->getPresenceSender()->sendPresence(Swift::Presence::create("Send me a message"));
 }
 
-void ConnectionHandler::enableMessageCarbons() {
-    auto enableCarbonsRequest = Swift::EnableCarbonsRequest::create(client_->getIQRouter());
-    enableCarbonsRequest->onResponse.connect(boost::bind(&ConnectionHandler::handleCarbonsReply, this, _1, _2));
-    enableCarbonsRequest->send();
+void ConnectionHandler::errorReceived(QXmppClient::Error error)
+{
+    clientError_ = error;
 }
 
-void ConnectionHandler::handleCarbonsReply(Swift::Payload::ref, Swift::ErrorPayload::ref error){
-    if (error) {
-    	qDebug() << "Failed to enable carbons";
-    } else {
-    	qDebug() << "Successfully enabled carbons";
-    }
-}
-
-void ConnectionHandler::handleDisconnected(const boost::optional<Swift::ClientError>& error)
+void ConnectionHandler::handleDisconnected()
 {
     qDebug() << QTime::currentTime().toString() << "ConnectionHandler::handleDISconnected";
 
     connected_ = false;
     emit connectionStateChanged();
 
-    if (error)
+    if ( clientError_ != QXmppClient::Error::NoError )
     {
-        Swift::ClientError clientError = *error;
-        Swift::ClientError::Type type = clientError.getType();
-        qDebug() << "disconnet error: " << type;
+        qDebug() << "disconnet error: " << clientError_;
 
         // trigger the reConnectionHandler to get back online if inet is available
         if (initialConnectionSuccessfull_)
@@ -131,7 +118,8 @@ void ConnectionHandler::tryStablishServerConnection()
 #endif
                 )
         {
-            xmppPingController_->doPing();
+            // FIXME do a qxmpp ping!
+            //xmppPingController_->doPing();
         }
         else
         {
@@ -156,7 +144,13 @@ void ConnectionHandler::tryReconnect()
         client_->disconnect();
 
         // try new connect
-        client_->connect();
+        Settings settings;
+        auto jid = settings.getJid();
+        auto pass = settings.getPassword();
+        if ( (! jid.isEmpty()) && (! pass.isEmpty()))
+        {
+            client_->connectToServer(jid, pass);
+        }
     }
 }
 

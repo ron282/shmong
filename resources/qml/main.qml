@@ -2,6 +2,7 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import MeeGo.Connman 0.2
 import org.nemomobile.notifications 1.0
+import harbour.shmong 1.0
 
 import "pages"
 import "cover"
@@ -14,11 +15,11 @@ ApplicationWindow {
     onApplicationActiveChanged: {
         if (applicationActive == true) {
             appGetsActive()
-            shmoose.setAppIsActive(true)
+            shmong.setAppIsActive(true)
             removeNotifications()
         }
         else {
-            shmoose.setAppIsActive(false)
+            shmong.setAppIsActive(false)
         }
     }
 
@@ -52,7 +53,7 @@ ApplicationWindow {
     }
 
     function newMessageNotification(id, jid, body) {
-        var jidName = shmoose.rosterController.getNameForJid(jid)
+        var jidName = shmong.rosterController.getNameForJid(jid)
         var m = messageNotification.createObject(null)
         m.category = "x-nemo.messaging.im"
         m.previewSummary = jidName
@@ -67,10 +68,10 @@ ApplicationWindow {
         m.remoteActions = [ {
                                "name": "default",
                                "displayName": "Show Conversation",
-                               "icon": "harbour-shmoose",
-                               "service": "org.shmoose.session",
+                               "icon": "harbour-shmong",
+                               "service": "org.shmong.session",
                                "path": "/message",
-                               "iface": "org.shmoose.session",
+                               "iface": "org.shmong.session",
                                "method": "showConversation",
                                "arguments": [ "jid", jid ]
                            } ]
@@ -79,20 +80,20 @@ ApplicationWindow {
     }
 
     Connections {
-        target: shmoose.persistence.messageController
+        target: shmong.persistence.messageController
         onSignalMessageReceived: {
-            var currentChatPartner = shmoose.getCurrentChatPartner();
-            var isGroupMessage = shmoose.rosterController.isGroup(jid);
+            var currentChatPartner = shmong.getCurrentChatPartner();
+            var isGroupMessage = shmong.rosterController.isGroup(jid);
             if ( applicationActive == true && currentChatPartner.localeCompare(jid) == 0 ) {
                 return; // active app/chat, do not send
             }
-            if ( shmoose.settings.ForceOffNotifications.indexOf(jid) >= 0 ) {
+            if ( shmong.settings.ForceOffNotifications.indexOf(jid) >= 0 ) {
                 return; // notifications disabled for this jid
             }        
-            if ( shmoose.settings.ForceOnNotifications.indexOf(jid) < 0 ) {
+            if ( shmong.settings.ForceOnNotifications.indexOf(jid) < 0 ) {
                 // default notification settings apply
-                if ( ( isGroupMessage == false && shmoose.settings.DisplayChatNotifications == false )
-                      || ( isGroupMessage == true && shmoose.settings.DisplayGroupchatNotifications == false ) ) {
+                if ( ( isGroupMessage == false && shmong.settings.DisplayChatNotifications == false )
+                      || ( isGroupMessage == true && shmong.settings.DisplayGroupchatNotifications == false ) ) {
                     return;
                 }
             }
@@ -101,7 +102,7 @@ ApplicationWindow {
     }
 
     Connections {
-        target: shmoose
+        target: shmong
         onSignalShowMessage: {
             //console.log("hl: " + headline + ", body: " + body);
             dialogHeadlineText = headline;
@@ -158,7 +159,7 @@ ApplicationWindow {
         pageStack.push(pageMenu, {}, PageStackAction.Immediate)
         pageStack.push(pageConversations, {}, PageStackAction.Immediate)
         pageStack.push (pageMessaging, { "conversationId" : jid }, PageStackAction.Immediate);
-        shmoose.setCurrentChatPartner(jid);
+        shmong.setCurrentChatPartner(jid);
     }
 
     TechnologyModel {
@@ -175,7 +176,7 @@ ApplicationWindow {
                 console.log("wifi DISconnected " + mainWindow.networkType)
             }
             mainWindow.hasInetConnection = mainWindow.getHasInetConnection()
-            shmoose.setHasInetConnection(mainWindow.hasInetConnection)
+            shmong.setHasInetConnection(mainWindow.hasInetConnection)
         }
     }
 
@@ -193,7 +194,7 @@ ApplicationWindow {
                 console.log("cellular DISconnected")
             }
             mainWindow.hasInetConnection = mainWindow.getHasInetConnection()
-            shmoose.setHasInetConnection(mainWindow.hasInetConnection)
+            shmong.setHasInetConnection(mainWindow.hasInetConnection)
         }
     }
 
@@ -211,7 +212,7 @@ ApplicationWindow {
                 console.log("ethernet DISconnected")
             }
             mainWindow.hasInetConnection = mainWindow.getHasInetConnection()
-            shmoose.setHasInetConnection(mainWindow.hasInetConnection)
+            shmong.setHasInetConnection(mainWindow.hasInetConnection)
         }
     }
 }

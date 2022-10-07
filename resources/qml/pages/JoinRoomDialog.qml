@@ -37,7 +37,7 @@ Dialog {
 
             if (jid.length > 0)
             {
-                shmoose.joinRoom(jid, name)
+                shmong.joinRoom(jid, name)
             }
         }
     }

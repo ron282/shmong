@@ -37,7 +37,7 @@ Dialog {
 
             if (jid.length > 0)
             {
-                shmoose.rosterController.addContact(jid, name)
+                shmong.rosterController.addContact(jid, name)
             }
         }
     }

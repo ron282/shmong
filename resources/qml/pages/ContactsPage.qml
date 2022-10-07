@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.shmoose 1.0
+import harbour.shmong 1.0
 
 Page {
     id: page;
@@ -26,13 +26,14 @@ Page {
             //                }
             //            }
         }
-        model: shmoose.rosterController.rosterList
+        model: shmong.rosterController.rosterList
         delegate: ListItem {
             id: item;
             menu: contextMenu
             contentHeight: Theme.itemSizeMedium;
             onClicked: {
-                shmoose.setCurrentChatPartner(jid)
+                console.log("push messaging page with jid: " + jid);
+                shmong.setCurrentChatPartner(jid)
                 pageStack.push (pageMessaging, { "conversationId" : jid });
             }
 
@@ -71,7 +72,7 @@ Page {
                 Row {
                     Image {
                         id: subscriptionImage;
-                        visible: ! shmoose.rosterController.isGroup(jid)
+                        visible: ! shmong.rosterController.isGroup(jid)
                         source: getSubscriptionImage(subscription);
                     }
                     Image {
@@ -99,11 +100,11 @@ Page {
                             onClicked: {
                                 remorseAction(qsTr("Remove contact"),
                                 function() {
-                                    if (shmoose.rosterController.isGroup(jid)) {
-                                        shmoose.removeRoom(jid)
+                                    if (shmong.rosterController.isGroup(jid)) {
+                                        shmong.removeRoom(jid)
                                     }
                                     else {
-                                        shmoose.rosterController.removeContact(jid)
+                                        shmong.rosterController.removeContact(jid)
                                     }
                                 })  
                                 
@@ -145,7 +146,7 @@ Page {
     }
 
     function getImage(jid) {
-        if (shmoose.rosterController.isGroup(jid)) {
+        if (shmong.rosterController.isGroup(jid)) {
             return "image://theme/icon-l-image";
         } else {
             return "image://theme/icon-l-people"

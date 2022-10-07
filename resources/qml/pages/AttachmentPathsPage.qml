@@ -24,7 +24,7 @@ Page {
             title: qsTr("Attachment Search Paths")
         }
 
-        model: shmoose.settings.ImagePaths
+        model: shmong.settings.ImagePaths
 
         delegate: ListItem {
             id: pathItem
@@ -35,7 +35,7 @@ Page {
             RemorseItem { id: remorse }
 
             function showRemorseItem() {
-                remorse.execute(pathItem, qsTr("Deleting"), function() { shmoose.settings.removeImagePath(modelData) } )
+                remorse.execute(pathItem, qsTr("Deleting"), function() { shmong.settings.removeImagePath(modelData) } )
             }
 
             menu: ContextMenu {
