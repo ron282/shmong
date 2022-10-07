@@ -135,7 +135,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
     QString resourceName;
 
-    resourceName = QString("shmoose.") + System::getUniqueResourceId();
+    resourceName = QString("Shmong.") + System::getUniqueResourceId();
     QString completeJid = jid + "/" + resourceName;
 
 #ifndef SFOS
@@ -155,13 +155,13 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
     // configure the xmpp client
     softwareVersionResponder_ = new Swift::SoftwareVersionResponder(client_->getIQRouter());
-    softwareVersionResponder_->setVersion("Shmoose", version_.toStdString());
+    softwareVersionResponder_->setVersion("Shmong", version_.toStdString());
     softwareVersionResponder_->start();
-    client_->setSoftwareVersion("Shmoose", version_.toStdString());
+    client_->setSoftwareVersion("Shmong", version_.toStdString());
 
     // register capabilities
     Swift::DiscoInfo discoInfo;
-    discoInfo.addIdentity(Swift::DiscoInfo::Identity("shmoose", "client", "phone"));
+    discoInfo.addIdentity(Swift::DiscoInfo::Identity("shmong", "client", "phone"));
 
     // http://xmpp.org/extensions/xep-0184.html, MessageDeliveryReceiptsFeature
     discoInfo.addFeature(Swift::DiscoInfo::MessageDeliveryReceiptsFeature);
@@ -181,7 +181,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     }
 
     // identify myself
-    client_->getDiscoManager()->setCapsNode("https://github.com/geobra/harbour-shmoose");
+    client_->getDiscoManager()->setCapsNode("https://github.com/geobra/shmong");
 
     // setup this disco info
     client_->getDiscoManager()->setDiscoInfo(discoInfo);

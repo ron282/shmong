@@ -12,8 +12,8 @@ contains(DEFINES, DBUS) {
 QXMPPPATH = $$_PRO_FILE_PWD_/../qxmpp-sfos
 INCLUDEPATH += $${QXMPPPATH}/src/base
 INCLUDEPATH += $${QXMPPPATH}/src/client
-INCLUDEPATH += $${QXMPPPATH}/build_arm/src/base
-LIBS += $${QXMPPPATH}/build_arm/src/libqxmpp.a
+INCLUDEPATH += $${QXMPPPATH}/build/src/base
+LIBS += $${QXMPPPATH}/build/src/libqxmpp.a
 
 INCLUDEPATH += source
 INCLUDEPATH += source/persistence

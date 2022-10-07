@@ -1,5 +1,4 @@
-#ifndef SHMOOSE_H
-#define SHMOOSE_H
+#pragma once
 
 //#include "Persistence.h"
 #include "XmppClient.h"
@@ -128,4 +127,3 @@ public:
     QString notSentMsgId_;
 };
 
-#endif

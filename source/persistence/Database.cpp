@@ -62,7 +62,7 @@ bool Database::open(QString const &jid)
         }
         else
         {
-            /* shmoose uses two table
+            /* shmong uses two table
              * one for all the messages, one for all the sessions
              *
              * + no table joins

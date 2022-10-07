@@ -74,12 +74,12 @@ Rectangle {
             text: "send"
 
             onClicked: {
-                console.log("send to: " + shmoose.getCurrentChatPartner())
+                console.log("send to: " + shmong.getCurrentChatPartner())
                 if (edit.text.startsWith("file://")) {
-                    shmoose.sendFile(edit.text)
+                    shmong.sendFile(edit.text)
                 }
                 else {
-                    shmoose.sendMessage(edit.text, "txt")
+                    shmong.sendMessage(edit.text, "txt")
                 }
                 edit.text = ""
             }
@@ -98,7 +98,7 @@ Rectangle {
         }
 
         Connections {
-            target: shmoose
+            target: shmong
             onSignalCanSendFile: {
                 console.log("HTTP uploads enabled");
                 attachButton.enabled = true;

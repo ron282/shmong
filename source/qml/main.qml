@@ -32,13 +32,13 @@ ApplicationWindow {
             TextField {
                 id: jidField
                 Layout.fillWidth: true
-                text: shmoose.settings.Jid
+                text: shmong.settings.Jid
                 placeholderText: "JID"
             }
             TextField {
                 id: passField
                 Layout.fillWidth: true
-                text: shmoose.settings.Password
+                text: shmong.settings.Password
                 placeholderText: "Password"
                 echoMode: TextInput.Password
             }
@@ -48,9 +48,9 @@ ApplicationWindow {
                 text: "Connect"
                 onClicked: {
                     console.log("connect: " + jidField.text);
-                    //shmoose.settings.SaveCredentials = true;
+                    //shmong.settings.SaveCredentials = true;
                     //connectButton.enabled = false;
-                    shmoose.mainConnect(jidField.text, passField.text);
+                    shmong.mainConnect(jidField.text, passField.text);
                 }
             }
         }
@@ -89,26 +89,26 @@ ApplicationWindow {
     }
 
     Connections {
-        target: shmoose
+        target: shmong
         onConnectionStateChanged: {
-            if (shmoose.connectionState == true) {
+            if (shmong.connectionState == true) {
                 footer.text = "Connected";
                 connectButton.enabled = false;
 
-                shmoose.setAppIsActive(true)
-                shmoose.setCurrentChatPartner("")
+                shmong.setAppIsActive(true)
+                shmong.setCurrentChatPartner("")
             }
             else {
                 footer.text = "DISconnected"
 
-                shmoose.setAppIsActive(false)
+                shmong.setAppIsActive(false)
                 connectButton.enabled = true;
             }
         }
     }
 
     Connections {
-        target: shmoose
+        target: shmong
         onSignalShowStatus: {
             footer.text = headline + " " + body
         }
