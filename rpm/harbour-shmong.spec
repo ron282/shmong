@@ -1,7 +1,7 @@
 Name: harbour-shmong
 Version: 0.1.0
 Release:	1%{?dist}
-Summary: Shmoose - XMPP Client for Sailfish OS
+Summary: Shmong - XMPP Client for Sailfish OS
 
 Group: Qt/Qt
 License: GPL
@@ -19,6 +19,8 @@ BuildRequires:  openssl-devel
 BuildRequires:  libgpg-error-devel
 BuildRequires:  libgcrypt-devel
 BuildRequires:  sqlite-devel
+BuildRequires:  qxmpp-devel
+
 
 %description
 XMPP Client for Sailfish OS
@@ -38,7 +40,7 @@ rm -rf $RPM_BUILD_ROOT
 # >> install pre
 # << install pre
 install -d %{buildroot}%{_bindir}
-install -p -m 0755 %(pwd)/shmong %{buildroot}%{_bindir}/%{name}
+install -p -m 0755 %(pwd)/%{name} %{buildroot}%{_bindir}/%{name}
 install -d %{buildroot}%{_datadir}/applications
 install -d %{buildroot}%{_datadir}/lipstick/notificationcategories
 install -d %{buildroot}%{_datadir}/%{name}
@@ -50,8 +52,8 @@ cp -Ra %{_sourcedir}/../resources/icons/* %{buildroot}%{_datadir}/%{name}/icons
 cp -Ra %{_sourcedir}/../resources/translations/*.qm %{buildroot}%{_datadir}/%{name}/translations
 install -d %{buildroot}%{_datadir}/icons/hicolor/86x86/apps
 install -m 0444 -t %{buildroot}%{_datadir}/icons/hicolor/86x86/apps/ %{_sourcedir}/../resources/icons/86x86/%{name}.png
-install -p %{_sourcedir}/../resources/harbour-shmong.desktop %{buildroot}%{_datadir}/applications/%{name}.desktop
-install -p %{_sourcedir}/../resources/harbour-shmong-message.conf %{buildroot}%{_datadir}/lipstick/notificationcategories/%{name}-message.conf
+install -p %{_sourcedir}/../resources/%{name}.desktop %{buildroot}%{_datadir}/applications/%{name}.desktop
+install -p %{_sourcedir}/../resources/%{name}-message.conf %{buildroot}%{_datadir}/lipstick/notificationcategories/%{name}-message.conf
 
 strip %{buildroot}%{_bindir}/%{name}
 

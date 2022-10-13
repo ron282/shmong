@@ -21,18 +21,18 @@ Page {
 
             TextSwitch {
                 id: chatNotificationSwitch
-                checked: shmoose.settings.DisplayChatNotifications
+                checked: shmong.settings.DisplayChatNotifications
                 text: qsTr("Display chat notifications")
                 onClicked: {
-                    shmoose.settings.DisplayChatNotifications = chatNotificationSwitch.checked;
+                    shmong.settings.DisplayChatNotifications = chatNotificationSwitch.checked;
                 }
             }
             TextSwitch {
                 id: groupchatNotificationSwitch
-                checked: shmoose.settings.DisplayGroupchatNotifications
+                checked: shmong.settings.DisplayGroupchatNotifications
                 text: qsTr("Display group chat notifications")
                 onClicked: {
-                    shmoose.settings.DisplayGroupchatNotifications = groupchatNotificationSwitch.checked;
+                    shmong.settings.DisplayGroupchatNotifications = groupchatNotificationSwitch.checked;
                 }
             }
 
@@ -40,10 +40,10 @@ Page {
 
             TextSwitch {
                 id: readNotificationSwitch
-                checked: shmoose.settings.SendReadNotifications
+                checked: shmong.settings.SendReadNotifications
                 text: qsTr("Send Read Notifications")
                 onClicked: {
-                    shmoose.settings.SendReadNotifications = readNotificationSwitch.checked;
+                    shmong.settings.SendReadNotifications = readNotificationSwitch.checked;
                 }
             }
 
@@ -51,10 +51,10 @@ Page {
 
             TextSwitch {
                 id: askBeforeDownloadingSwitch
-                checked: shmoose.settings.AskBeforeDownloading
+                checked: shmong.settings.AskBeforeDownloading
                 text: qsTr("Ask before downloading attachments")
                 onClicked: {
-                    shmoose.settings.AskBeforeDownloading = askBeforeDownloadingSwitch.checked;
+                    shmong.settings.AskBeforeDownloading = askBeforeDownloadingSwitch.checked;
                 }
             }
 
@@ -62,10 +62,10 @@ Page {
 
             TextSwitch {
                 id: softwareFeatureOmemoSwitch
-                checked: shmoose.settings.EnableSoftwareFeatureOmemo
+                checked: shmong.settings.EnableSoftwareFeatureOmemo
                 text: qsTr("Omemo Message Encryption - Experimental! (Need app restart)")
                 onClicked: {
-                    shmoose.settings.EnableSoftwareFeatureOmemo = softwareFeatureOmemoSwitch.checked;
+                    shmong.settings.EnableSoftwareFeatureOmemo = softwareFeatureOmemoSwitch.checked;
                 }
             }
 

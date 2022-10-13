@@ -3,7 +3,7 @@
 #include "IpHeartBeatWatcher.h"
 #include "XmppPingController.h"
 
-#include <boost/bind.hpp>
+#include "XmppClient.h"
 
 #include <QTime>
 #include <QDebug>
@@ -16,7 +16,7 @@ ConnectionHandler::ConnectionHandler(QObject *parent) : QObject(parent),
 {
     connect(reConnectionHandler_, SIGNAL(canTryToReconnect()), this, SLOT(tryReconnect()));
 
-#ifdef SFOS
+#ifndef SFOS
     connect(ipHeartBeatWatcher_, SIGNAL(triggered()), this, SLOT(tryStablishServerConnection()));
     connect(ipHeartBeatWatcher_, SIGNAL(finished()), ipHeartBeatWatcher_, SLOT(deleteLater()));
 #else
@@ -38,28 +38,27 @@ ConnectionHandler::~ConnectionHandler()
 #endif
 }
 
-void ConnectionHandler::setupWithClient(Swift::Client* client)
+void ConnectionHandler::setupWithClient(XmppClient* client)
 {
     if (client != nullptr)
     {
         client_ = client;
 
-        client_->onConnected.connect(boost::bind(&ConnectionHandler::handleConnected, this));
-        client_->onDisconnected.connect(boost::bind(&ConnectionHandler::handleDisconnected, this, _1));
+        client_->connect(client_, &QXmppClient::stateChanged, this, &ConnectionHandler::handleStateChanged);
 
         xmppPingController_->setupWithClient(client_);
     }
 }
 
-void ConnectionHandler::handleConnected()
+void ConnectionHandler::handleStateChanged(QXmppClient::State state)
 {
-    qDebug() << QTime::currentTime().toString() << "ConnectionHandler::handleConnected";
+    qDebug() << QTime::currentTime().toString() << "ConnectionHandler::handleStateChanged";
 
-    connected_ = true;
+    connected_ = client_->isConnected();
     emit connectionStateChanged();
 
     // only on a first connection. skip this on a reconnect event.
-    if (initialConnectionSuccessfull_ == false)
+    if (initialConnectionSuccessfull_ == false && isConnected())
     {
         initialConnectionSuccessfull_ = true;
 
@@ -68,52 +67,16 @@ void ConnectionHandler::handleConnected()
         emit signalInitialConnectionEstablished();
     }
 
-    client_->getPresenceSender()->sendPresence(Swift::Presence::create("Send me a message"));
+//    client_->getPresenceSender()->sendPresence(Swift::Presence::create("Send me a message"));
 
     // message carbons request must be made each time a connection is established
     enableMessageCarbons();
 }
 
 void ConnectionHandler::enableMessageCarbons() {
-    auto enableCarbonsRequest = Swift::EnableCarbonsRequest::create(client_->getIQRouter());
-    enableCarbonsRequest->onResponse.connect(boost::bind(&ConnectionHandler::handleCarbonsReply, this, _1, _2));
-    enableCarbonsRequest->send();
-}
-
-void ConnectionHandler::handleCarbonsReply(Swift::Payload::ref, Swift::ErrorPayload::ref error){
-    if (error) {
-    	qDebug() << "Failed to enable carbons";
-    } else {
-    	qDebug() << "Successfully enabled carbons";
-    }
-}
-
-void ConnectionHandler::handleDisconnected(const boost::optional<Swift::ClientError>& error)
-{
-    qDebug() << QTime::currentTime().toString() << "ConnectionHandler::handleDISconnected";
-
-    connected_ = false;
-    emit connectionStateChanged();
-
-    if (error)
-    {
-        Swift::ClientError clientError = *error;
-        Swift::ClientError::Type type = clientError.getType();
-        qDebug() << "disconnet error: " << type;
-
-        // trigger the reConnectionHandler to get back online if inet is available
-        if (initialConnectionSuccessfull_)
-        {
-#ifndef TRAVIS
-            // dont do a automatic reconnect attempmt on TRAVIS during testing
-            reConnectionHandler_->isConnected(hasInetConnection_);
-#endif
-        }
-    }
-    else
-    {
-        qDebug() << "disconnect without error";
-    }
+//    auto enableCarbonsRequest = Swift::EnableCarbonsRequest::create(client_->getIQRouter());
+//    enableCarbonsRequest->onResponse.connect(boost::bind(&ConnectionHandler::handleCarbonsReply, this, _1, _2));
+//    enableCarbonsRequest->send();
 }
 
 void ConnectionHandler::tryStablishServerConnection()
@@ -152,11 +115,13 @@ void ConnectionHandler::tryReconnect()
 
     if (initialConnectionSuccessfull_ == true && hasInetConnection_ == true)
     {
+#if 0   //Check if this is still needed
         // try to disconnect the old session from before network disturbtion
         client_->disconnect();
 
         // try new connect
         client_->connect();
+#endif
     }
 }
 

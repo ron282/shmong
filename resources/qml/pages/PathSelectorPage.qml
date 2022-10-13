@@ -9,7 +9,7 @@ Dialog {
     property url currentPath
 
     onAccepted: {
-        shmoose.settings.addImagePath(currentPath)
+        shmong.settings.addImagePath(currentPath)
     }
 
     acceptDestinationAction: PageStackAction.Pop

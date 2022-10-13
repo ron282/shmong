@@ -109,9 +109,10 @@ public:
     Persistence* persistence_;
     Settings* settings_;
 
+    ConnectionHandler* connectionHandler_;
+
 #if 0
     StanzaId *stanzaId_;
-    ConnectionHandler* connectionHandler_;
     LurchAdapter* lurchAdapter_;
     HttpFileUploadManager* httpFileUploadManager_;
     MamManager *mamManager_;

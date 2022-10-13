@@ -2,7 +2,7 @@ import QtQuick 2.6
 import QtQuick.Window 2.0;
 import QtMultimedia 5.6
 import Sailfish.Silica 1.0
-import harbour.shmoose 1.0
+import harbour.shmong 1.0
 import Sailfish.Pickers 1.0
 import Nemo.Thumbnailer 1.0
 
@@ -10,20 +10,23 @@ Page {
     id: page;
     allowedOrientations: Orientation.All;
 
+/*
     onStatusChanged: {
         if (status === PageStatus.Active) {
-            pageStack.pushAttached(Qt.resolvedUrl("MessagingSettingsPage.qml"),{ 'conversationId': conversationId })
+            pageStack.pushAttached(Qt.resolvedUrl("MessagingSettingsPage.qml"),{ "conversationId": conversationId })
         }
         if (status == PageStatus.Deactivating) {
             if (_navigation == PageNavigation.Back) {
-                shmoose.setCurrentChatPartner("")
+                shmong.setCurrentChatPartner("")
             }
         }
     }
+*/
 
     property string conversationId : "";
-    property bool isGroup : shmoose.rosterController.isGroup(conversationId);
-    property string imagePath : shmoose.rosterController.getAvatarImagePathForJid(conversationId);
+
+    property bool isGroup : shmong.rosterController.isGroup(conversationId);
+    property string imagePath : shmong.rosterController.getAvatarImagePathForJid(conversationId);
     property bool refreshDate : false;
 
     Timer {
@@ -43,7 +46,7 @@ Page {
 
     PageHeader {
         id: banner;
-        title: trimStr(shmoose.rosterController.getNameForJid(conversationId));
+        title: trimStr(shmong.rosterController.getNameForJid(conversationId));
         Image {
             id: avatar;
             parent: banner.extraContent;
@@ -74,12 +77,12 @@ Page {
         spacing: Theme.paddingMedium;
         cacheBuffer: Screen.width // do avoid flickering when image width is changed
 
-        model: shmoose.persistence.messageController
+        model: shmong.persistence.messageController
 
         delegate: ListItem {
             id: item;
 
-            property string file : shmoose.getLocalFileForUrl(message)
+            property string file : shmong.getLocalFileForUrl(message)
 
             contentHeight: shadow.height;
 
@@ -174,7 +177,7 @@ Page {
                             id: bnDownloadAttachment
                             text: qsTr("Download")
                             onClicked: {
-                                shmoose.downloadFile(message, id);
+                                shmong.downloadFile(message, id);
                             }
                         }
                         Label {
@@ -246,7 +249,7 @@ Page {
                         }
 
                         Connections {
-                            target: shmoose
+                            target: shmong
                             onSignalShowStatus: {
                                 if(qsTr(headline) == qsTr("File Upload") && msgstate == 4)
                                     upload.text = qsTr("uploading ")+body;
@@ -254,7 +257,7 @@ Page {
                             onHttpDownloadFinished: {
                                 if(attachmentMsgId == id)
                                 {
-                                    item.file =  shmoose.getLocalFileForUrl(message);
+                                    item.file =  shmong.getLocalFileForUrl(message);
                                 }
                             }
                         }
@@ -334,23 +337,23 @@ Page {
                 }
                 MenuItem {
                     text: qsTr("Send again")
-                    visible: (msgstate == 5 && shmoose.canSendFile())
+                    visible: (msgstate == 5 && shmong.canSendFile())
                     onClicked: {
-                        shmoose.sendFile(conversationId, message);
+                        shmong.sendFile(conversationId, message);
                      }
                 }
                 MenuItem {
                     text: qsTr("Save")
                     visible:  (type != "txt") && (direction == 1)
                     onClicked: {
-                        shmoose.saveAttachment(item.file);
+                        shmong.saveAttachment(item.file);
                      }
                 }
                 MenuItem {
                     visible: isGroup;
                     text: qsTr("Status")
                     onClicked:  {
-                        shmoose.persistence.gcmController.setFilterOnMsg(id);
+                        shmong.persistence.gcmController.setFilterOnMsg(id);
                         pageStack.push(pageMsgStatus);
                     }
                 }
@@ -376,7 +379,7 @@ Page {
         }
         Label {
             id: displaymsgviewlabel
-            text:  shmoose.persistence.getResourcesOfNewestDisplayedMsgforJid(conversationId);
+            text:  shmong.persistence.getResourcesOfNewestDisplayedMsgforJid(conversationId);
             enabled: isGroup;
             color: Theme.highlightColor;
             font {
@@ -411,8 +414,8 @@ Page {
             id: editbox;
             visible: sendmsgview.attachmentPath.length === 0
 
-            property var userHasOmemo: shmoose.isOmemoUser(conversationId);
-            property var useOmemo: (shmoose.settings.SendPlainText.indexOf(conversationId) < 0) ? true : false;
+            property var userHasOmemo: shmong.isOmemoUser(conversationId);
+            property var useOmemo: (shmong.settings.SendPlainText.indexOf(conversationId) < 0) ? true : false;
 
             property var enterMsg: qsTr("Enter message...");
             property var phT: (userHasOmemo && useOmemo) ? "Omemo: " + enterMsg : enterMsg;
@@ -464,49 +467,52 @@ Page {
             }
         }
     }
-        IconButton {
-            id: sendButton
-            enabled: {
-                if (shmoose.connectionState && mainWindow.hasInetConnection) {
-                    return true
-                }
-                else {
-                    return false
-                }
+    IconButton {
+        id: sendButton
+
+        enabled: {
+            if (shmong.connectionState && mainWindow.hasInetConnection) {
+                return true
             }
-            icon.source: getSendButtonImage()
-            icon.width: Theme.iconSizeMedium + 2*Theme.paddingSmall                                
-            icon.height: width
+            else {
+                return false
+            }
 
-            anchors {                                                                              
-                // icon-m-send has own padding                                                     
-                right: parent.right; rightMargin: Theme.horizontalPageMargin-Theme.paddingMedium   
-                bottom: parent.bottom; bottomMargin: Theme.paddingMedium                           
-            } 
-            onClicked: {
-                if (editbox.text.length === 0 && sendmsgview.attachmentPath.length === 0 && shmoose.canSendFile()) {
+        }
+
+        icon.source: getSendButtonImage()
+        icon.width: Theme.iconSizeMedium + 2*Theme.paddingSmall                                
+        icon.height: width
+
+        anchors {                                                                              
+            // icon-m-send has own padding                                                     
+            right: parent.right; rightMargin: Theme.horizontalPageMargin-Theme.paddingMedium   
+            bottom: parent.bottom; bottomMargin: Theme.paddingMedium                           
+        } 
+        onClicked: {
+            if (editbox.text.length === 0 && sendmsgview.attachmentPath.length === 0 && shmong.canSendFile()) {
+                sendmsgview.attachmentPath = ""
+                fileModel.searchPath = shmong.settings.ImagePaths
+                pageStack.push(shmong.settings.SendOnlyImages ? imagePickerPage: filePickerPage)
+            } else {
+                //console.log(sendmsgview.attachmentPath)
+                var msgToSend = editbox.text;
+
+                if (sendmsgview.attachmentPath.length > 0) {
+                    shmong.sendFile(conversationId, sendmsgview.attachmentPath);
                     sendmsgview.attachmentPath = ""
-                    fileModel.searchPath = shmoose.settings.ImagePaths
-                    pageStack.push(shmoose.settings.SendOnlyImages ? imagePickerPage: filePickerPage)
-                } else {
-                    //console.log(sendmsgview.attachmentPath)
-                    var msgToSend = editbox.text;
-
-                    if (sendmsgview.attachmentPath.length > 0) {
-                        shmoose.sendFile(conversationId, sendmsgview.attachmentPath);
-                        sendmsgview.attachmentPath = ""
-                    }
-
-                    if (msgToSend.length > 0) {
-                        shmoose.sendMessage(conversationId, msgToSend, "txt");
-                        editbox.text = " ";
-                        editbox.text = "";
-                    }
-
-                    displaymsgviewlabel.text = "";
                 }
+
+                if (msgToSend.length > 0) {
+                    shmong.sendMessage(conversationId, msgToSend, "txt");
+                    editbox.text = " ";
+                    editbox.text = "";
+                }
+
+                displaymsgviewlabel.text = "";
             }
         }
+    }
         
         Component {
             id: filePickerPage
@@ -533,16 +539,16 @@ Page {
         }
 
         Connections {
-            target: shmoose
+            target: shmong
             onCanSendFile: {
-                //console.log("HTTP uploads enabled");
+                console.log("HTTP uploads enabled");
                 sendButton.icon.source = getSendButtonImage();
             }
         }
 
     function getSendButtonImage() {
         if (editbox.text.length === 0 && sendmsgview.attachmentPath.length === 0) {
-            if (shmoose.canSendFile()) {
+            if (shmong.canSendFile()) {
                 return "image://theme/icon-m-attach"
             } else {
                 return "image://theme/icon-m-send"
@@ -558,7 +564,7 @@ Page {
     }
 
     function getImage(jid) {
-        if (shmoose.rosterController.isGroup(jid)) {
+        if (shmong.rosterController.isGroup(jid)) {
             return "image://theme/icon-l-image";
         } else {
             return "image://theme/icon-l-people"

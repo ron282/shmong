@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.shmoose 1.0
+import harbour.shmong 1.0
 
 Page {
     id: page;
@@ -24,7 +24,7 @@ Page {
             text: qsTr("Empty")
             hintText: qsTr("Select a contact to start a conversation")
         }
-        model: shmoose.persistence.sessionController
+        model: shmong.persistence.sessionController
         delegate: ListItem {
             id: item;
             contentHeight: Theme.itemSizeMedium;
@@ -32,7 +32,7 @@ Page {
             onClicked: {
                 console.log("set current char partner: " + jid);
                 pageStack.push (pageMessaging, { "conversationId" : jid });
-                shmoose.setCurrentChatPartner(jid);
+                shmong.setCurrentChatPartner(jid);
             }
 
             Image {
@@ -78,7 +78,7 @@ Page {
                         id: nameId;
                         wrapMode: Text.NoWrap
                         maximumLineCount: 1
-                        text: shmoose.rosterController.getNameForJid(jid)
+                        text: shmong.rosterController.getNameForJid(jid)
                         color: (item.highlighted ? Theme.highlightColor : Theme.primaryColor);
                         font.pixelSize: Theme.fontSizeMedium;
                     }
@@ -109,7 +109,7 @@ Page {
                     onClicked: {
                         remorseAction(qsTr("Delete conversation"),
                                       function() {
-                                            shmoose.persistence.removeConversation(jid);
+                                            shmong.persistence.removeConversation(jid);
                                         })
                     }
                 }
@@ -121,11 +121,11 @@ Page {
     }
 
     function getImage(jid) {
-        var imagePath = shmoose.rosterController.getAvatarImagePathForJid(jid);
+        var imagePath = shmong.rosterController.getAvatarImagePathForJid(jid);
 
         if (imagePath.length > 0) {
             return imagePath;
-        } else if (shmoose.rosterController.isGroup(jid)) {
+        } else if (shmong.rosterController.isGroup(jid)) {
             return "image://theme/icon-l-image";
         } else {
             return "image://theme/icon-l-people"

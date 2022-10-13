@@ -1,4 +1,4 @@
-TARGET = shmong
+TARGET = harbour-shmong
 
 TEMPLATE = app
 QT += qml quick core sql xml concurrent
@@ -8,22 +8,19 @@ contains(DEFINES, DBUS) {
     QT += dbus
 }
 
-
 QXMPPPATH = $$_PRO_FILE_PWD_/../qxmpp-sfos
-INCLUDEPATH += $${QXMPPPATH}/src/base
-INCLUDEPATH += $${QXMPPPATH}/src/client
-INCLUDEPATH += $${QXMPPPATH}/build_arm/src/base
-LIBS += $${QXMPPPATH}/build_arm/src/libqxmpp.a
+INCLUDEPATH += /usr/include/qxmpp
+INCLUDEPATH += /usr/include/qxmpp/omemo
 
 INCLUDEPATH += source
 INCLUDEPATH += source/persistence
 INCLUDEPATH += source/xep/httpFileUpload
-#INCLUDEPATH += source/xep/mam
-#INCLUDEPATH += source/xep/xmppPing
+INCLUDEPATH += source/xep/mam
+INCLUDEPATH += source/xep/xmppPing
 INCLUDEPATH += source/xep/chatMarkers
 #INCLUDEPATH += source/xep/stanzaId
 #INCLUDEPATH += source/room
-#INCLUDEPATH += source/networkconnection
+INCLUDEPATH += source/networkconnection
 INCLUDEPATH += source/contacts
 INCLUDEPATH += source/base
 
@@ -42,7 +39,7 @@ contains(DEFINES, SFOS) {
 }
 
 QMAKE_CXXFLAGS += -std=c++17
-LIBS += -L ../qxmpp-sfos/build_arm/src -lgcrypt
+LIBS += -lgcrypt -lqxmpp
 
 DEFINES += BOOST_SIGNALS_NO_DEPRECATION_WARNING
 
@@ -84,8 +81,8 @@ SOURCES += \
     source/xep/httpFileUpload/DownloadManager.cpp \
     source/xep/httpFileUpload/ImageProcessing.cpp \
     source/xep/httpFileUpload/FileWithCypher.cpp \
-#    source/xep/mam/MamManager.cpp \
-#    source/xep/xmppPing/XmppPingController.cpp \
+    source/xep/mam/MamManager.cpp \
+    source/xep/xmppPing/XmppPingController.cpp \
     source/xep/chatMarkers/ChatMarkers.cpp \
 #    source/xep/stanzaId/StanzaId.cpp \
 #    source/xep/stanzaId/StanzaIdPayload.cpp \
@@ -94,9 +91,9 @@ SOURCES += \
 #    source/xep/stanzaId/StanzaIdPayloadSerializer.cpp \
 #    source/room/MucManager.cpp \
 #    source/room/MucCollection.cpp \
-#    source/networkconnection/ConnectionHandler.cpp \
-#    source/networkconnection/IpHeartBeatWatcher.cpp \
-#    source/networkconnection/ReConnectionHandler.cpp \
+    source/networkconnection/ConnectionHandler.cpp \
+    source/networkconnection/IpHeartBeatWatcher.cpp \
+    source/networkconnection/ReConnectionHandler.cpp \
 #    source/contacts/PresenceHandler.cpp \
     source/contacts/RosterItem.cpp \
     source/contacts/RosterController.cpp \
@@ -122,10 +119,10 @@ HEADERS += source/base/Shmong.h \
     source/xep/httpFileUpload/DownloadManager.h \
     source/xep/httpFileUpload/ImageProcessing.h \
     source/xep/httpFileUpload/FileWithCypher.h \
-#    source/xep/mam/MamManager.h \
-#    source/xep/mam/MamRequest.h \
-#    source/xep/xmppPing/PingRequest.h \
-#    source/xep/xmppPing/XmppPingController.h \
+    source/xep/mam/MamManager.h \
+    source/xep/mam/MamRequest.h \
+    source/xep/xmppPing/PingRequest.h \
+    source/xep/xmppPing/XmppPingController.h \
     source/xep/chatMarkers/ChatMarkers.h \
 #    source/xep/stanzaId/StanzaId.h \
 #    source/xep/stanzaId/StanzaIdPayload.h \
@@ -134,9 +131,9 @@ HEADERS += source/base/Shmong.h \
 #    source/xep/stanzaId/StanzaIdPayloadSerializer.h \
 #    source/room/MucManager.h \
 #    source/room/MucCollection.h \
-#    source/networkconnection/ConnectionHandler.h \
-#    source/networkconnection/IpHeartBeatWatcher.h \
-#    source/networkconnection/ReConnectionHandler.h \
+    source/networkconnection/ConnectionHandler.h \
+    source/networkconnection/IpHeartBeatWatcher.h \
+    source/networkconnection/ReConnectionHandler.h \
 #     source/contacts/PresenceHandler.h \
     source/contacts/RosterItem.h \
     source/contacts/RosterController.h \

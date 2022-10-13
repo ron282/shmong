@@ -15,9 +15,9 @@
 #include "Persistence.h"
 #include "MessageController.h"
 
+#include "ConnectionHandler.h"
 #if 0
 #include "ChatMarkers.h"
-#include "ConnectionHandler.h"
 #include "HttpFileUploadManager.h"
 #include "MamManager.h"
 #include "MucManager.h"
@@ -31,6 +31,7 @@
 #include "QXmppLogger.h"
 #include "QXmppUtils.h"
 #include "QXmppMessage.h"
+#include "QXmppOmemoManager.h"
 
 
 #include "System.h"
@@ -41,8 +42,7 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     persistence_(new Persistence(this)),
     settings_(new Settings(this)),
 //    stanzaId_(new StanzaId(this)),
-//    connectionHandler_(new ConnectionHandler(this)),
-//    messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, lurchAdapter_, this)),
+    connectionHandler_(new ConnectionHandler(this)),
 //    httpFileUploadManager_(new HttpFileUploadManager(this)),
     messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, this)),
 //    mamManager_(new MamManager(persistence_, this)),
@@ -57,8 +57,8 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     // FIXME make sure that this is not triggered after a reconnect!
     connect(client_, &QXmppClient::connected, this, &Shmong::intialSetupOnFirstConnection);
 
-#if 0
     connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
+#if 0
 
     connect(httpFileUploadManager_, SIGNAL(fileUploadedForJidToUrl(QString,QString,QString)),
             this, SLOT(fileUploaded(QString,QString,QString)));
@@ -77,7 +77,6 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     connect(this, SIGNAL(signalAppGetsActive(bool)), this, SLOT(sendReadNotification(bool)));
 
     // inform connectionHandler and messageHandler about app status
-#if 0
     connect(this, SIGNAL(signalAppGetsActive(bool)), connectionHandler_, SLOT(slotAppGetsActive(bool)));
     connect(this, SIGNAL(signalAppGetsActive(bool)), messageHandler_, SLOT(slotAppGetsActive(bool)));
 
@@ -85,6 +84,7 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     connect(connectionHandler_, SIGNAL(signalHasInetConnection(bool)), this, SIGNAL(signalHasInetConnection(bool)));
     connect(connectionHandler_, SIGNAL(connectionStateChanged()), this, SIGNAL(connectionStateChanged()));
 
+#if 0
     // show errors to user
     connect(mucManager_, SIGNAL(signalShowMessage(QString,QString)), this, SIGNAL(signalShowMessage(QString,QString)));
     connect(rosterController_, SIGNAL(signalShowMessage(QString,QString)), this, SIGNAL(signalShowMessage(QString,QString)));
@@ -106,26 +106,23 @@ Shmong::~Shmong()
 {
     qDebug() << "Shmong::~Shmong";
 
-#if 0
     if (connectionHandler_->isConnected())
     {
+#if 0
         softwareVersionResponder_->stop();
 
-        if( tracer_ != nullptr) delete tracer_;
         delete softwareVersionResponder_;
+#endif
         delete client_;
     }
-#endif
 }
 
 void Shmong::slotAboutToQuit()
 {
-#if 0
     if (connectionHandler_->isConnected())
     {
-        client_->disconnect();
+        client_->disconnectFromServer();
     }
-#endif
 }
 
 void Shmong::mainConnect(const QString &jid, const QString &pass)
@@ -135,7 +132,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
     QString resourceName;
 
-    resourceName = QString("shmoose.") + System::getUniqueResourceId();
+    resourceName = QString("shmong.") + System::getUniqueResourceId();
     QString completeJid = jid + "/" + resourceName;
 
 #ifndef SFOS
@@ -147,8 +144,8 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
 #if 0
     stanzaId_->setupWithClient(client_);
-    connectionHandler_->setupWithClient(client_);
 #endif
+    connectionHandler_->setupWithClient(client_);
     messageHandler_->setupWithClient(client_);
 #if 0
 
@@ -172,14 +169,19 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     // https://xmpp.org/extensions/xep-0280.html
     discoInfo.addFeature(Swift::DiscoInfo::MessageCarbonsFeature);
 
+#endif
+
     // omemo
     Settings settings;
     if (settings.getSoftwareFeatureOmemoEnabled() == true)
     {
-        discoInfo.addFeature(lurchAdapter_->getFeature().toStdString());
-        discoInfo.addFeature(lurchAdapter_->getFeature().toStdString() + "+notify");
+#if 0
+        // Need to add a persistent storage
+        client_->addExtension(new QXmppOmemoManager);
+#endif
     }
 
+#if 0
     // identify myself
     client_->getDiscoManager()->setCapsNode("https://github.com/geobra/harbour-shmoose");
 
@@ -189,7 +191,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     // finaly try to connect
 #endif
 
-    client_->logger()->setLoggingType(QXmppLogger::FileLogging);
+    client_->logger()->setLoggingType(QXmppLogger::StdoutLogging);
     client_->connectToServer(jid, pass);
 
     // for saving on connection success
@@ -349,18 +351,25 @@ Settings* Shmong::getSettings()
 
 bool Shmong::connectionState() const
 {
-    //return connectionHandler_->isConnected();
+    return connectionHandler_->isConnected();
 }
 
 bool Shmong::canSendFile()
 {
-    //return httpFileUploadManager_->getServerHasFeatureHttpUpload();
+#if 0
+    return httpFileUploadManager_->getServerHasFeatureHttpUpload();
+#else
+    return false;
+#endif
 }
 
 bool Shmong::isOmemoUser(const QString& jid)
 {
-    //return lurchAdapter_->isOmemoUser(jid);
+#if 0
+    return lurchAdapter_->isOmemoUser(jid);
+#else
     return false;
+#endif
 }
 
 QString Shmong::getAttachmentPath()
@@ -387,17 +396,22 @@ QString Shmong::getLocalFileForUrl(const QString& str)
         else
             return "";
     }
+#else
+    return "";
 #endif
+
 }
 
 void Shmong::downloadFile(const QString& str, const QString& msgId)
 {
+#if 0
     messageHandler_->downloadFile(str, msgId);
+#endif
 }
 
 void Shmong::setHasInetConnection(bool connected)
 {
-    //connectionHandler_->setHasInetConnection(connected);
+    connectionHandler_->setHasInetConnection(connected);
 }
 
 void Shmong::setAppIsActive(bool active)
@@ -429,12 +443,14 @@ void Shmong::joinRoom(QString const &roomJid, QString const &roomName)
 
 void Shmong::removeRoom(QString const &roomJid)
 {
-    //mucManager_->removeRoom(roomJid);
+#if 0
+    mucManager_->removeRoom(roomJid);
+#endif
 }
 
 void Shmong::attachmentUploadFailed()
 {
-    //persistence_->markMessageAsSendFailed(notSentMsgId_);
+    persistence_->markMessageAsSendFailed(notSentMsgId_);
     notSentMsgId_ = "";
 }
 
@@ -458,5 +474,9 @@ void Shmong::fileUploaded(QString const&toJid, QString const&message, QString co
 
 unsigned int Shmong::getMaxUploadSize()
 {
-    //return httpFileUploadManager_->getMaxFileSize();
+#if 0
+    return httpFileUploadManager_->getMaxFileSize();
+#else
+    return 0;
+#endif
 }

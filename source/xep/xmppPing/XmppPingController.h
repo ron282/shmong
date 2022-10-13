@@ -1,25 +1,20 @@
 #ifndef XMPPPINGCONTROLLER_H
 #define XMPPPINGCONTROLLER_H
 
-#include <string>
-
-namespace Swift
-{
-class Client;
-}
+class XmppClient;
 
 class XmppPingController
 {
 public:
     XmppPingController();
 
-    void setupWithClient(Swift::Client* client);
+    void setupWithClient(XmppClient* client);
     void doPing();
 
 private:
-    void handlePingResponse(const std::string response);
+    void handlePingResponse();
 
-    Swift::Client* client_;
+    XmppClient *client_;
 
 };
 
