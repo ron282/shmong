@@ -1,6 +1,6 @@
 #include "DbusCommunicator.h"
 
-#include "Shmoose.h"
+#include "Shmong.h"
 #include "RosterItem.h"
 #include "MessageController.h"
 #include "MessageHandler.h"
@@ -45,23 +45,23 @@ DbusCommunicator::DbusCommunicator(const QString &path, const QString &name, QOb
     qDebug() << "QDbusConnection name: " << QDBusConnection::sessionBus().name() << ", env: " << qgetenv("DBUS_SESSION_BUS_ADDRESS");
 }
 
-void DbusCommunicator::setXmpClient(Shmoose* shmoose)
+void DbusCommunicator::setXmpClient(Shmong* shmong)
 {
-    shmoose_ = shmoose;
+    shmong_ = shmong;
 }
 
 void DbusCommunicator::setupConnections()
 {
-    Persistence *persistence = shmoose_->getPersistence();
+    Persistence *persistence = shmong_->getPersistence();
     MessageController *msgCtrl = persistence->getMessageController();
     GcmController* gcmCtrl = persistence->getGcmController();
-    DownloadManager* downloadMgr = shmoose_->messageHandler_->downloadManager_;
-    MessageHandler* msgHandler = shmoose_->messageHandler_;
-    LurchAdapter* lurchAdapter = shmoose_->lurchAdapter_;
-    MucManager* muma = shmoose_->mucManager_;
-    RosterController* rc = shmoose_->getRosterController();
+    DownloadManager* downloadMgr = shmong_->messageHandler_->downloadManager_;
+    MessageHandler* msgHandler = shmong_->messageHandler_;
+    LurchAdapter* lurchAdapter = shmong_->lurchAdapter_;
+    MucManager* muma = shmong_->mucManager_;
+    RosterController* rc = shmong_->getRosterController();
 
-    connect(shmoose_, SIGNAL(connectionStateChanged()), this, SLOT(slotConnectionStateChanged()));
+    connect(shmong_, SIGNAL(connectionStateChanged()), this, SLOT(slotConnectionStateChanged()));
     connect(msgCtrl, SIGNAL(signalMessageReceived(QString, QString, QString)), this, SLOT(slotForwaredReceivedMsgToDbus(QString, QString, QString)));
     connect(msgCtrl, SIGNAL(signalMessageStateChanged(QString, int)), this, SLOT(slotForwardMsgStateToDbus(QString, int)));
     connect(gcmCtrl, SIGNAL(signalRoomMessageStateChanged(QString,QString,int)), this, SLOT(slotForwardRoomMsgStateToDbus(QString, QString, int)));
@@ -78,7 +78,7 @@ bool DbusCommunicator::tryToConnect(const QString& jid, const QString& pass)
 {
     qDebug() << "try to connect as " << jid << " with pass " << pass;
 
-    shmoose_->mainConnect(jid, pass);
+    shmong_->mainConnect(jid, pass);
 
     return true;
 }
@@ -97,7 +97,7 @@ void DbusCommunicator::slotConnectionStateChanged()
 bool DbusCommunicator::requestRoster()
 {
     qDebug() << "requestRoster";
-    RosterController* rc = shmoose_->getRosterController();
+    RosterController* rc = shmong_->getRosterController();
     rc->requestRoster();
 
     return true;
@@ -106,7 +106,7 @@ bool DbusCommunicator::requestRoster()
 bool DbusCommunicator::addContact(const QString& jid, const QString& name)
 {
     qDebug() << "addContact: jid: " << jid << ", name: " << name;
-    RosterController* rc = shmoose_->getRosterController();
+    RosterController* rc = shmong_->getRosterController();
     rc->addContact(jid, name);
 
     return true;
@@ -126,7 +126,7 @@ void DbusCommunicator::slotGotRosterEntry()
 bool DbusCommunicator::joinRoom(const QString& jid, const QString& name)
 {
     qDebug() << "joinRoom: jid: " << jid << ", name: " << name;
-    shmoose_->joinRoom(jid, name);
+    shmong_->joinRoom(jid, name);
 
     return true;
 }
@@ -150,7 +150,7 @@ bool DbusCommunicator::slotNewRoomJoin(QString jid, QString name)
 bool DbusCommunicator::removeRoom(const QString& jid)
 {
     qDebug() << "removeRoom: jid: " << jid;
-    shmoose_->removeRoom(jid);
+    shmong_->removeRoom(jid);
 
     return true;
 }
@@ -158,7 +158,7 @@ bool DbusCommunicator::removeRoom(const QString& jid)
 bool DbusCommunicator::removeContact(const QString& jid)
 {
     qDebug() << "removeContact: jid: " << jid;
-    RosterController* rc = shmoose_->getRosterController();
+    RosterController* rc = shmong_->getRosterController();
 
     rc->removeContact(jid);
 
@@ -168,7 +168,7 @@ bool DbusCommunicator::removeContact(const QString& jid)
 bool DbusCommunicator::sendMsg(const QString& jid, const QString& msg)
 {
     qDebug() << "sendMsg";
-    shmoose_->sendMessage(jid, msg, "txt");
+    shmong_->sendMessage(jid, msg, "txt");
 
     return true;
 }
@@ -176,7 +176,7 @@ bool DbusCommunicator::sendMsg(const QString& jid, const QString& msg)
 bool DbusCommunicator::sendFile(const QString& jid, const QString& path)
 {
     qDebug() << "sendFile";
-    shmoose_->sendFile(jid, path);
+    shmong_->sendFile(jid, path);
 
     return true;
 }
@@ -261,7 +261,7 @@ bool DbusCommunicator::setCurrentChatPartner(QString jid)
 {
     qDebug() << "setCurrentChatPartner: " << jid;
 
-    shmoose_->setCurrentChatPartner(jid);
+    shmong_->setCurrentChatPartner(jid);
 
     return true;
 }
@@ -282,7 +282,7 @@ bool DbusCommunicator::disconnectFromServer()
 {
     qDebug() << "disconnectFromServer";
 
-    shmoose_->mainDisconnect();
+    shmong_->mainDisconnect();
 
     return true;
 }
@@ -291,14 +291,14 @@ bool DbusCommunicator::reConnect()
 {
     qDebug() << "reConnect";
 
-    shmoose_->reConnect();
+    shmong_->reConnect();
 
     return true;
 }
 
 bool DbusCommunicator::requestRosterList()
 {
-    RosterController* rc = shmoose_->getRosterController();
+    RosterController* rc = shmong_->getRosterController();
 
     QList<RosterItem*> rosterList = rc->fetchRosterList();
     for (auto item: rosterList)
@@ -334,14 +334,14 @@ bool DbusCommunicator::requestRosterList()
 
 bool DbusCommunicator::addForcePlainMsgForJid(const QString& jid)
 {
-    shmoose_->settings_->addForcePlainTextSending(jid);
+    shmong_->settings_->addForcePlainTextSending(jid);
 
     return true;
 }
 
 bool DbusCommunicator::rmForcePlainMsgForJid(const QString& jid)
 {
-    shmoose_->settings_->removeForcePlainTextSending(jid);
+    shmong_->settings_->removeForcePlainTextSending(jid);
 
     return true;
 }

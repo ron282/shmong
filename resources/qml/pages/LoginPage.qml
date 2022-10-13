@@ -19,7 +19,7 @@ Page {
             spacing: Theme.paddingSmall
 
             PageHeader {
-                title: qsTr("Welcome to shmong")
+                title: qsTr("Welcome to ShmoNG")
             }
 
             Label {

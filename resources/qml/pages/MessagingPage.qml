@@ -24,7 +24,6 @@ Page {
 */
 
     property string conversationId : "";
-
     property bool isGroup : shmong.rosterController.isGroup(conversationId);
     property string imagePath : shmong.rosterController.getAvatarImagePathForJid(conversationId);
     property bool refreshDate : false;
@@ -477,7 +476,6 @@ Page {
             else {
                 return false
             }
-
         }
 
         icon.source: getSendButtonImage()

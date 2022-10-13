@@ -1,5 +1,6 @@
-#ifndef CONNECTIONHANDLER_H
-#define CONNECTIONHANDLER_H
+#pragma once
+
+#include <XmppClient.h>
 
 #include <QObject>
 #include "QXmppClient.h"
@@ -8,6 +9,7 @@ class ReConnectionHandler;
 class IpHeartBeatWatcher;
 class XmppPingController;
 class XmppClient;
+//class XmppPingController;
 
 class ConnectionHandler : public QObject
 {
@@ -38,15 +40,15 @@ private:
     void handleStateChanged(QXmppClient::State state);
     void enableMessageCarbons();
 
+private:
     bool connected_;
     bool initialConnectionSuccessfull_;
     bool hasInetConnection_;
     bool appIsActive_;
+    QXmppClient::Error clientError_{QXmppClient::Error::NoError};
 
     XmppClient* client_{nullptr};
     ReConnectionHandler *reConnectionHandler_;
     IpHeartBeatWatcher *ipHeartBeatWatcher_;
-    XmppPingController *xmppPingController_;
+    //XmppPingController *xmppPingController_;
 };
-
-#endif // CONNECTIONHANDLER_H

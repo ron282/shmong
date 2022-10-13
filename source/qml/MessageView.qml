@@ -4,7 +4,7 @@ import QtQuick.Controls 2.4
 
 
 Rectangle {
-    property string attachmentPath: shmoose.getAttachmentPath();
+    property string attachmentPath: shmong.getAttachmentPath();
 
     ListView {
         id: msgListView
@@ -13,7 +13,7 @@ Rectangle {
 
         rotation: 180
 
-        model: shmoose.persistence.messageController
+        model: shmong.persistence.messageController
         delegate: Item {
             id: item
 
@@ -23,7 +23,7 @@ Rectangle {
             height: messageText.height + imageView.height + timestampText.height + msgStatus.height + resourceText.height + 10
 
             readonly property bool alignRight: (direction == 1);
-            readonly property bool isGroup : shmoose.rosterController.isGroup(shmoose.getCurrentChatPartner());
+            readonly property bool isGroup : shmong.rosterController.isGroup(shmong.getCurrentChatPartner());
 
             Column {
 
@@ -61,7 +61,7 @@ Rectangle {
                             anchors.fill: parent
                             onClicked: {
                                 //console.log("Info " + id + " " + index);
-                                shmoose.persistence.gcmController.setFilterOnMsg(id);
+                                shmong.persistence.gcmController.setFilterOnMsg(id);
                                 dialog.visible = true;
                             }
                         }
@@ -75,7 +75,7 @@ Rectangle {
                         fillMode: Image.PreserveAspectFit;
                         visible: (type === "image")
 
-                        source: ( (type === "image") ? "file:/" + attachmentPath + "/" + shmoose.getLocalFileForUrl(message) : "");
+                        source: ( (type === "image") ? "file:/" + attachmentPath + "/" + shmong.getLocalFileForUrl(message) : "");
                     }
 
                     Text {
@@ -147,7 +147,7 @@ Rectangle {
                                 height: parent.height
                                 //anchors.fill: parent
 
-                                model: shmoose.persistence.gcmController
+                                model: shmong.persistence.gcmController
                                 delegate: Rectangle {
                                     width: parent.width
                                     height: 20

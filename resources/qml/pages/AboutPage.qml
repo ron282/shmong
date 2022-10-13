@@ -12,7 +12,7 @@ Page {
         spacing: Theme.paddingLarge
 
         PageHeader {
-            title: qsTr("Shmong - Xmpp Client")
+            title: qsTr("ShmoNG - Xmpp Client")
         }
 
         Image {

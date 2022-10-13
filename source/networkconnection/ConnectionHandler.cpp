@@ -4,6 +4,7 @@
 #include "XmppPingController.h"
 
 #include "XmppClient.h"
+//#include "XmppPingController.h"
 
 #include <QTime>
 #include <QDebug>
@@ -11,8 +12,8 @@
 ConnectionHandler::ConnectionHandler(QObject *parent) : QObject(parent),
     connected_(false), initialConnectionSuccessfull_(false), hasInetConnection_(false), appIsActive_(false),
     reConnectionHandler_(new ReConnectionHandler(30000, this)),
-    ipHeartBeatWatcher_(new IpHeartBeatWatcher(this)),
-    xmppPingController_(new XmppPingController())
+    ipHeartBeatWatcher_(new IpHeartBeatWatcher(this))
+    //xmppPingController_(new XmppPingController())
 {
     connect(reConnectionHandler_, SIGNAL(canTryToReconnect()), this, SLOT(tryReconnect()));
 
@@ -30,7 +31,7 @@ ConnectionHandler::ConnectionHandler(QObject *parent) : QObject(parent),
 
 ConnectionHandler::~ConnectionHandler()
 {
-    delete xmppPingController_;
+    //delete xmppPingController_;
 
     ipHeartBeatWatcher_->stopWatching();
 #ifdef SFOS
@@ -45,8 +46,7 @@ void ConnectionHandler::setupWithClient(XmppClient* client)
         client_ = client;
 
         client_->connect(client_, &QXmppClient::stateChanged, this, &ConnectionHandler::handleStateChanged);
-
-        xmppPingController_->setupWithClient(client_);
+        //xmppPingController_->setupWithClient(client_);
     }
 }
 
@@ -94,7 +94,8 @@ void ConnectionHandler::tryStablishServerConnection()
 #endif
                 )
         {
-            xmppPingController_->doPing();
+            // FIXME do a qxmpp ping!
+            //xmppPingController_->doPing();
         }
         else
         {

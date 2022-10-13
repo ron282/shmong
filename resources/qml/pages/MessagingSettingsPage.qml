@@ -7,7 +7,6 @@ Page {
     id: page
     allowedOrientations: Orientation.All
     property string conversationId
-
     readonly property int limitCompression : shmong.settings.LimitCompression
     property int maxUploadSize : shmong.getMaxUploadSize();
 

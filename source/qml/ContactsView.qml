@@ -1,7 +1,7 @@
 import QtQuick.Layouts 1.2
 import QtQuick 2.3
 import QtQuick.Controls 2.4
-import harbour.shmoose 1.0
+import harbour.shmong 1.0
 
 Rectangle {
 
@@ -10,7 +10,7 @@ Rectangle {
         width: parent.width
         height: parent.height + 20
 
-        model: shmoose.rosterController.rosterList
+        model: shmong.rosterController.rosterList
         delegate: Rectangle {
             height: nameText.height + jidText.height + avail.height + 10
             width: parent.width
@@ -56,7 +56,7 @@ Rectangle {
                     Row {
                         Image {
                             id: subs;
-                            visible: ! shmoose.rosterController.isGroup(jid)
+                            visible: ! shmong.rosterController.isGroup(jid)
                             source: getSubscriptionImage(subscription);
                         }
                         Image {
@@ -71,7 +71,7 @@ Rectangle {
                     onClicked: {
                         rosterListView.currentIndex = index
 
-                        shmoose.setCurrentChatPartner(shmoose.rosterController.rosterList[rosterListView.currentIndex].jid)
+                        shmong.setCurrentChatPartner(shmong.rosterController.rosterList[rosterListView.currentIndex].jid)
                     }
                 }
             }
@@ -87,7 +87,7 @@ Rectangle {
     }
 
     function getImage(jid) {
-        if (shmoose.rosterController.isGroup(jid)) {
+        if (shmong.rosterController.isGroup(jid)) {
             return "img/group.png";
         } else {
             return "img/person.png"

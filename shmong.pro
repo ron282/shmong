@@ -3,12 +3,13 @@ TARGET = harbour-shmong
 TEMPLATE = app
 QT += qml quick core sql xml concurrent
 
+LBUILD = build
+
 contains(DEFINES, DBUS) {
     CONFIG += console
     QT += dbus
 }
 
-QXMPPPATH = $$_PRO_FILE_PWD_/../qxmpp-sfos
 INCLUDEPATH += /usr/include/qxmpp
 INCLUDEPATH += /usr/include/qxmpp/omemo
 

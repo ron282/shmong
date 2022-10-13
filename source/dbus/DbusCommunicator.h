@@ -12,7 +12,7 @@ class DbusCommunicator : public QObject
 
 public:
     explicit DbusCommunicator(const QString& path, const QString& name, QObject * const parent = nullptr);
-    void setXmpClient(Shmoose* shmoose);
+    void setXmpClient(Shmong *shmong);
     void setupConnections();
 
 public slots:
@@ -62,7 +62,7 @@ private slots:
     void slotForwardReceivedDeviceListOfJid(QString jid);
 
 private:
-    Shmoose* shmoose_;
+    Shmoose* shmong_;
 
     QString dbusObjectPath_;
     QString dbusServiceName_;

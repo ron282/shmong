@@ -30,7 +30,7 @@ void LurchAdapterTest::cleanupTestCase()
 void LurchAdapterTest::test1o1MamMsgIncoming()
 {
 #if 0
-    <message xmlns="jabber:client" lang="en" to="xxx@jabber.ccc.de/shmooseDesktop" from="bbb@conference.blabber.im/libersum" type="groupchat" id="12bb22c1-9978-4e8e-91ca-82a5302cfa80">
+    <message xmlns="jabber:client" lang="en" to="xxx@jabber.ccc.de/shmongDesktop" from="bbb@conference.blabber.im/libersum" type="groupchat" id="12bb22c1-9978-4e8e-91ca-82a5302cfa80">
      <archived xmlns="urn:xmpp:mam:tmp" by="bbb@conference.blabber.im" id="1612520430972962"></archived>
      <stanza-id xmlns="urn:xmpp:sid:0" by="bbb@conference.blabber.im" id="1612520430972962"></stanza-id>
      <origin-id xmlns="urn:xmpp:sid:0" id="12bb22c1-9978-4e8e-91ca-82a5302cfa80"></origin-id>

@@ -26,7 +26,7 @@ void ClientRoomMsgTest::initTestCase()
 {
     ClientComTestCommon::initTestCase();
 
-    QString dbusServiceNameCommon("org.shmoose.dbuscom");
+    QString dbusServiceNameCommon("org.shmong.dbuscom");
     QString dbusServiceNameMhs = dbusServiceNameCommon + "mhs";
     QString dbusObjectPath("/client");
 

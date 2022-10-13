@@ -1,5 +1,4 @@
-#ifndef SHMOOSE_H
-#define SHMOOSE_H
+#pragma once
 
 //#include "Persistence.h"
 #include "XmppClient.h"
@@ -108,7 +107,6 @@ public:
     RosterController* rosterController_;
     Persistence* persistence_;
     Settings* settings_;
-
     ConnectionHandler* connectionHandler_;
 
 #if 0
@@ -129,4 +127,3 @@ public:
     QString notSentMsgId_;
 };
 
-#endif

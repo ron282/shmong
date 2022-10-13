@@ -14,6 +14,8 @@
 #include "RosterController.h"
 #include "Persistence.h"
 #include "MessageController.h"
+#include "ConnectionHandler.h"
+#include "CryptoHelper.h"
 
 #include "ConnectionHandler.h"
 #if 0
@@ -22,7 +24,6 @@
 #include "MamManager.h"
 #include "MucManager.h"
 #include "DiscoInfoHandler.h"
-#include "CryptoHelper.h"
 #include "StanzaId.h"
 #include "Settings.h"
 #endif
@@ -54,12 +55,10 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
 {
     qApp->setApplicationVersion(version_);
 
-    // FIXME make sure that this is not triggered after a reconnect!
-    connect(client_, &QXmppClient::connected, this, &Shmong::intialSetupOnFirstConnection);
+    connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
 
     connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
 #if 0
-
     connect(httpFileUploadManager_, SIGNAL(fileUploadedForJidToUrl(QString,QString,QString)),
             this, SLOT(fileUploaded(QString,QString,QString)));
     connect(httpFileUploadManager_, SIGNAL(fileUploadFailedForJidToUrl()), 
@@ -132,7 +131,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
     QString resourceName;
 
-    resourceName = QString("shmong.") + System::getUniqueResourceId();
+    resourceName = QString("Shmong.") + System::getUniqueResourceId();
     QString completeJid = jid + "/" + resourceName;
 
 #ifndef SFOS
@@ -148,17 +147,17 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     connectionHandler_->setupWithClient(client_);
     messageHandler_->setupWithClient(client_);
 #if 0
-
+    stanzaId_->setupWithClient(client_);
 
     // configure the xmpp client
     softwareVersionResponder_ = new Swift::SoftwareVersionResponder(client_->getIQRouter());
-    softwareVersionResponder_->setVersion("Shmoose", version_.toStdString());
+    softwareVersionResponder_->setVersion("Shmong", version_.toStdString());
     softwareVersionResponder_->start();
-    client_->setSoftwareVersion("Shmoose", version_.toStdString());
+    client_->setSoftwareVersion("Shmong", version_.toStdString());
 
     // register capabilities
     Swift::DiscoInfo discoInfo;
-    discoInfo.addIdentity(Swift::DiscoInfo::Identity("shmoose", "client", "phone"));
+    discoInfo.addIdentity(Swift::DiscoInfo::Identity("shmong", "client", "phone"));
 
     // http://xmpp.org/extensions/xep-0184.html, MessageDeliveryReceiptsFeature
     discoInfo.addFeature(Swift::DiscoInfo::MessageDeliveryReceiptsFeature);
@@ -183,7 +182,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
 #if 0
     // identify myself
-    client_->getDiscoManager()->setCapsNode("https://github.com/geobra/harbour-shmoose");
+    client_->getDiscoManager()->setCapsNode("https://github.com/geobra/shmong");
 
     // setup this disco info
     client_->getDiscoManager()->setDiscoInfo(discoInfo);
@@ -399,7 +398,6 @@ QString Shmong::getLocalFileForUrl(const QString& str)
 #else
     return "";
 #endif
-
 }
 
 void Shmong::downloadFile(const QString& str, const QString& msgId)

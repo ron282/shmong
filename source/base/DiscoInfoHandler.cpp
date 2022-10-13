@@ -34,10 +34,10 @@ void DiscoInfoHandler::setupWithClient(Swift::Client* client)
 void DiscoInfoHandler::handleDiscoServiceWalker(const Swift::JID & jid, std::shared_ptr<Swift::DiscoInfo> info)
 {
 #if 0
-    qDebug() << "Shmoose::handleDiscoWalkerService for '" << QString::fromStdString(jid.toString()) << "'.";
+    qDebug() << "Shmong::handleDiscoWalkerService for '" << QString::fromStdString(jid.toString()) << "'.";
     for(auto feature : info->getFeatures())
     {
-        qDebug() << "Shmoose::handleDiscoWalkerService feature '" << QString::fromStdString(feature) << "'.";
+        qDebug() << "Shmong::handleDiscoWalkerService feature '" << QString::fromStdString(feature) << "'.";
     }
 #endif
 
