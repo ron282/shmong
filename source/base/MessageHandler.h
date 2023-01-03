@@ -7,7 +7,7 @@
 
 #include "Settings.h"
 
-class XmppClient;
+class QXmppClient;
 class DownloadManager;
 class Persistence;
 class ChatMarkers;
@@ -21,7 +21,7 @@ class MessageHandler : public QObject
 public:
     MessageHandler(Persistence* persistence, Settings * settings, RosterController* rosterController, QObject *parent = 0);
 
-    void setupWithClient(XmppClient* client);
+    void setupWithClient(QXmppClient* client);
     void sendMessage(QString const &toJid, QString const &message, QString const &type, bool isGroup);
     void sendDisplayedForJid(const QString &jid);
     void downloadFile(const QString &str, const QString &msgId);
@@ -38,7 +38,7 @@ private:
 #ifdef DBUS
 public:
 #endif
-    XmppClient* client_;
+    QXmppClient* client_;
     Persistence* persistence_;
     Settings* settings_;
 

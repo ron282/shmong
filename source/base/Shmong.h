@@ -3,6 +3,7 @@
 //#include "Persistence.h"
 #include "XmppClient.h"
 #include "Settings.h"
+#include "QXmppTrustLevel.h"
 
 #include <QObject>
 #include <QStringList>
@@ -12,14 +13,31 @@
 class RosterController;
 class Persistence;
 class ConnectionHandler;
+class QXmppPubSubManager;
+class QXmppTrustMemoryStorage;
+class QXmppTrustManager;
+class QXmppOmemoMemoryStorage;
+class QXmppOmemoManager;
+class QXmppCarbonManager;
+class QXmppClient;
+class QXmppAtmTrustMemoryStorage;
+class QXmppAtmManager;
+
 #if 0
 class HttpFileUploadManager;
 class MucManager;
 class DiscoInfoHandler;
-class MamManager;
 class StanzaId;
 #endif
 class MessageHandler;
+class MamManager;
+
+constexpr auto ANY_TRUST_LEVEL = QXmpp::TrustLevel::Undecided |
+            QXmpp::TrustLevel::AutomaticallyDistrusted | 
+            QXmpp::TrustLevel::ManuallyDistrusted |
+            QXmpp::TrustLevel::AutomaticallyTrusted |
+            QXmpp::TrustLevel::ManuallyTrusted |
+            QXmpp::TrustLevel::Authenticated;
 
 class Shmong : public QObject
 {
@@ -54,6 +72,7 @@ public:
     Q_INVOKABLE QString getVersion();
 
     Q_INVOKABLE bool isOmemoUser(const QString& jid);
+    Q_INVOKABLE void omemoResetAll();
 
     Q_INVOKABLE void saveAttachment(const QString &msg);
     Q_INVOKABLE unsigned int getMaxUploadSize();
@@ -103,22 +122,30 @@ public:
     Persistence* getPersistence();
     Settings* getSettings();
 
-    XmppClient* client_;
+    QXmppClient* client_;
     RosterController* rosterController_;
     Persistence* persistence_;
     Settings* settings_;
     ConnectionHandler* connectionHandler_;
+    QXmppPubSubManager *pubsubManager_;
+    QXmppTrustMemoryStorage *trustStorage_;
+//    QXmppAtmTrustMemoryStorage *trustStorage_;
+    QXmppTrustManager* trustManager_; 
+//    QXmppAtmManager* trustManager_; 
+    QXmppOmemoMemoryStorage *omemoStorage_;
+    QXmppOmemoManager* omemoManager_;     
+    QXmppCarbonManager *carbonManager_;
+
 
 #if 0
     StanzaId *stanzaId_;
     LurchAdapter* lurchAdapter_;
     HttpFileUploadManager* httpFileUploadManager_;
-    MamManager *mamManager_;
     MucManager *mucManager_;
     DiscoInfoHandler* discoInfoHandler_;
 #endif
     MessageHandler* messageHandler_;
-
+    MamManager *mamManager_;
 
     QString jid_;
     QString password_;

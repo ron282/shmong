@@ -39,7 +39,7 @@ ConnectionHandler::~ConnectionHandler()
 #endif
 }
 
-void ConnectionHandler::setupWithClient(XmppClient* client)
+void ConnectionHandler::setupWithClient(QXmppClient* client)
 {
     if (client != nullptr)
     {

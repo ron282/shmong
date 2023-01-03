@@ -1,4 +1,5 @@
 #include "MessageHandler.h"
+#include "Shmong.h"
 #include "Persistence.h"
 #include "ImageProcessing.h"
 #include "DownloadManager.h"
@@ -6,13 +7,19 @@
 #include "XmlProcessor.h"
 #include "RosterController.h"
 
-#include "XmppClient.h"
+#include "QXmppClient.h"
+#include "QXmppE2eeMetadata.h"
 #include "QXmppMessage.h"
 #include "QXmppUtils.h"
+
 
 #include <QUrl>
 #include <QDebug>
 #include <QMimeDatabase>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <variant>
+
 
 MessageHandler::MessageHandler(Persistence *persistence, Settings * settings, RosterController* rosterController, QObject *parent) : QObject(parent),
     persistence_(persistence), settings_(settings),
@@ -24,7 +31,7 @@ MessageHandler::MessageHandler(Persistence *persistence, Settings * settings, Ro
     connect(downloadManager_, SIGNAL(httpDownloadFinished(QString)), this, SIGNAL(httpDownloadFinished(QString)));
 }
 
-void MessageHandler::setupWithClient(XmppClient* client)
+void MessageHandler::setupWithClient(QXmppClient* client)
 {
     if (client != nullptr)
     {
@@ -40,8 +47,11 @@ void MessageHandler::setupWithClient(XmppClient* client)
 void MessageHandler::handleMessageReceived(const QXmppMessage &message)
 {
     unsigned int security = 0;
-    if(message.encryptionMethod() == QXmppMessage::OMEMO)
+    if(message.encryptionMethod() != QXmpp::NoEncryption)
     {
+        qDebug() << "received encrypted message" << endl;
+        qDebug() << "decrypted message:" << message.body() << endl;
+
         security = 1;
     }
 
@@ -127,6 +137,9 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
 {
     QXmppMessage msg("", toJid, message);
     unsigned int security = 0;
+    QXmppSendStanzaParams sendParams;
+
+    sendParams.setAcceptedTrustLevels(ANY_TRUST_LEVEL);
 
     msg.setReceiptRequested(true);
     msg.setMarkable(true);
@@ -135,7 +148,7 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
     if ((settings_->getSoftwareFeatureOmemoEnabled() == true)
         && (! settings_->getSendPlainText().contains(toJid))) // no force for plain text msg in settings
     {
-        msg.setEncryptionMethod(QXmpp::Encryption::OMEMO);
+        msg.setEncryptionMethodNs("eu.siacs.conversations.axolotl");
         security = 1;
     }
     else // xep-0066. Only add the stanza on plain-text messages, as described in the xep-0454
@@ -151,9 +164,7 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
         msg.setType(QXmppMessage::GroupChat);
     }
 
-    //qDebug() << "sendMessage id:" << msg.id() << " body:" << message << endl;
-
-    client_->sendPacket(msg);
+    qDebug() << "sendMessage" << "to:" << msg.to() << "id:" << msg.id() << "security :" << security << " body:" << message << endl;
 
     persistence_->addMessage( msg.id(),
                               QXmppUtils::jidToBareJid(msg.to()),
@@ -161,6 +172,22 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
                               message, type, 0, security);
 
     emit messageSent(msg.id());
+
+    QFutureWatcher<QXmpp::SendResult> watcher;
+
+
+    auto future = client_->send(std::move(msg), sendParams);
+
+    watcher.setFuture(future);
+
+    connect(&watcher, &QFutureWatcher<QXmpp::SendResult>::finished, this, [=]() {
+        auto v = future.result();
+        auto error = std::get_if<QXmpp::SendError>(&v);
+        if(error == nullptr)
+            qDebug() << "send successful" << endl;
+        else
+            qDebug() << "send failed. Error:" << error->text << endl;
+    });
 }
 
 void MessageHandler::sendDisplayedForJid(const QString &jid)

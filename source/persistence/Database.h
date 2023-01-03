@@ -36,6 +36,33 @@ public:
     static const QString sqlResource_;
     static const QString sqlTimestamp_;
 
+    static const QString sqlIdentityTable_;
+    static const QString sqlOwnDeviceId_;
+    static const QString sqlOwnDeviceLabel_;
+    static const QString sqlPrivateIdentityKey_;
+    static const QString sqlPublicIdentityKey_;
+    static const QString sqlLatestSignedPreKeyId_;
+    static const QString sqlLatestPreKeyId_;
+
+    static const QString sqlSignedPreKeyTable_;
+    static const QString sqlSignedPreKeyId_;
+    static const QString sqlSignedPreKeyCreationDate_;
+    static const QString sqlSignedPreKeyData_;
+    static const QString sqlSignedPreKeyDataLen_;
+
+    static const QString sqlPreKeyTable_;
+    static const QString sqlPreKeyId_;
+    static const QString sqlPreKeyData_;
+
+    static const QString sqlDevicesTable_;
+    static const QString sqlDeviceId_;
+    static const QString sqlDeviceLabel_;
+    static const QString sqlDeviceKeyId_;
+    static const QString sqlDeviceSession_;
+    static const QString sqlDeviceUnrespondedSentStanza_;
+    static const QString sqlDeviceUnrespondedReceivedStanza_;
+    static const QString sqlRemoveDate_;
+
 signals:
 
 public slots:

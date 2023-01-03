@@ -21,6 +21,33 @@ const QString Database::sqlSessionName_ = "sessions";               // sql table
 const QString Database::sqlSessionLastMsg_ = "lastmessage";         // the content of the last message
 const QString Database::sqlSessionUnreadMsg_ = "unreadmessages";    // number of unread messages
 
+// own device  table
+const QString Database::sqlIdentityTable_ = "omemo_identity";
+const QString Database::sqlOwnDeviceId_ = "device_id";
+const QString Database::sqlOwnDeviceLabel_ = "device_label";
+const QString Database::sqlPrivateIdentityKey_ = "private_key";
+const QString Database::sqlPublicIdentityKey_ = "public_key";
+const QString Database::sqlLatestSignedPreKeyId_ = "signed_prekey";
+const QString Database::sqlLatestPreKeyId_ ="signed_prekey_len";
+
+const QString Database::sqlSignedPreKeyTable_ = "omemo_signed_prekeys";
+const QString Database::sqlSignedPreKeyId_ = "id";
+const QString Database::sqlSignedPreKeyCreationDate_ = "creation";
+const QString Database::sqlSignedPreKeyData_ = "prekey";
+
+const QString Database::sqlPreKeyTable_ = "omemo_pre_keys";
+const QString Database::sqlPreKeyId_ = "id";
+const QString Database::sqlPreKeyData_ = "data";
+
+const QString Database::sqlDevicesTable_ = "omemo_devices";
+const QString Database::sqlDeviceId_ = "device_id";
+const QString Database::sqlDeviceLabel_ = "device_label";
+const QString Database::sqlDeviceKeyId_ = "key_id";
+const QString Database::sqlDeviceSession_ = "session_data";
+const QString Database::sqlDeviceUnrespondedSentStanza_ = "unresponded_sent";
+const QString Database::sqlDeviceUnrespondedReceivedStanza_ = "unresponded_received";
+const QString Database::sqlRemoveDate_ = "removed";
+
 // groupchatmarker (gcm) table
 const QString Database::sqlGcmName_ = "groupchatmarkers";           // sql table name
 const QString Database::sqlGcmChatMemberName_ = "chatmembername";   // the name of the group chat member. Is the resource after the room jid
@@ -115,6 +142,76 @@ bool Database::open(QString const &jid)
                 }
             }
 
+            // another table for the omemo identity
+            if (! database_.tables().contains( sqlIdentityTable_ ))
+            {
+                QString sqlCreateCommand = "create table " + sqlIdentityTable_ +
+                        " (" + sqlOwnDeviceId_ + " INT UNSIGNED NOT NULL, " 
+                             + sqlOwnDeviceLabel_ + " TEXT NOT NULL, " 
+                             + sqlPrivateIdentityKey_ + " BLOB NOT NULL, " 
+                             + sqlPublicIdentityKey_ + " BLOB NOT NULL, "
+                             + sqlLatestSignedPreKeyId_ + " INT UNSIGNED NOT NULL, "
+                             + sqlLatestPreKeyId_ + " INTEGER NOT NULL, "
+                             + "PRIMARY KEY ( " + sqlOwnDeviceId_ + ") )";
+
+                if (query.exec(sqlCreateCommand) == false)
+                {
+                    qDebug() << "Error creating " << sqlIdentityTable_ << " table";
+                    databaseValid_ = false;
+                }
+            }
+
+            // another table for the omemo Signed PreKeys
+            if (! database_.tables().contains( sqlSignedPreKeyTable_ ))
+            {
+                QString sqlCreateCommand = "create table " + sqlSignedPreKeyTable_ +
+                        " (" + sqlSignedPreKeyId_ + " INT UNSIGNED NOT NULL, " 
+                             + sqlSignedPreKeyCreationDate_ + " TIMESTAMP NOT NULL, " 
+                             + sqlSignedPreKeyData_ + " BLOB NOT NULL, " 
+                             + "PRIMARY KEY ( " + sqlSignedPreKeyId_ + ") )";
+
+                if (query.exec(sqlCreateCommand) == false)
+                {
+                    qDebug() << "Error creating " << sqlSignedPreKeyTable_ << " table";
+                    databaseValid_ = false;
+                }
+            }
+
+            // another table for the omemo Signed PreKeys
+            if (! database_.tables().contains( sqlPreKeyTable_ ))
+            {
+                QString sqlCreateCommand = "create table " + sqlPreKeyTable_ +
+                        " (" + sqlPreKeyId_ + " INT UNSIGNED NOT NULL, " 
+                             + sqlPreKeyData_ + " BLOB NOT NULL, " 
+                             + "PRIMARY KEY ( " + sqlPreKeyId_ + ") )";
+
+                if (query.exec(sqlCreateCommand) == false)
+                {
+                    qDebug() << "Error creating " << sqlPreKeyTable_ << " table";
+                    databaseValid_ = false;
+                }
+            }
+
+            // another table for the omemo sessions
+            if (! database_.tables().contains( sqlDevicesTable_ ))
+            {
+                QString sqlCreateCommand = "create table " + sqlDevicesTable_ +
+                        " (" + sqlJid_ + " TEXT NOT NULL, " 
+                             + sqlDeviceId_ + " INT UNSIGNED NOT NULL, " 
+                             + sqlDeviceLabel_ + " TEXT NOT NULL, " 
+                             + sqlDeviceKeyId_ + " BLOB NOT NULL, " 
+                             + sqlDeviceSession_ + " BLOB NOT NULL, " 
+                             + sqlDeviceUnrespondedSentStanza_ + " INTEGER NOT NULL, " 
+                             + sqlDeviceUnrespondedReceivedStanza_ + " INTEGER NOT NULL, " 
+                             + sqlRemoveDate_ + " TIMESTAMP NOT NULL, " 
+                             + "PRIMARY KEY ( " + sqlJid_ + ", " + sqlDeviceId_ + ") )";
+
+                if (query.exec(sqlCreateCommand) == false)
+                {
+                    qDebug() << "Error creating " << sqlDevicesTable_ << " table";
+                    databaseValid_ = false;
+                }
+            }
         }
     }
 

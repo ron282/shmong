@@ -8,7 +8,7 @@
 class ReConnectionHandler;
 class IpHeartBeatWatcher;
 class XmppPingController;
-class XmppClient;
+
 //class XmppPingController;
 
 class ConnectionHandler : public QObject
@@ -18,7 +18,7 @@ public:
     explicit ConnectionHandler(QObject *parent = 0);
     ~ConnectionHandler();
 
-    void setupWithClient(XmppClient* client);
+    void setupWithClient(QXmppClient* client);
     void setHasInetConnection(bool connected);
 
     bool isConnected();
@@ -47,7 +47,7 @@ private:
     bool appIsActive_;
     QXmppClient::Error clientError_{QXmppClient::Error::NoError};
 
-    XmppClient* client_{nullptr};
+    QXmppClient* client_{nullptr};
     ReConnectionHandler *reConnectionHandler_;
     IpHeartBeatWatcher *ipHeartBeatWatcher_;
     //XmppPingController *xmppPingController_;

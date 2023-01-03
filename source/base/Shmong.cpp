@@ -21,7 +21,6 @@
 #if 0
 #include "ChatMarkers.h"
 #include "HttpFileUploadManager.h"
-#include "MamManager.h"
 #include "MucManager.h"
 #include "DiscoInfoHandler.h"
 #include "StanzaId.h"
@@ -29,16 +28,26 @@
 #endif
 
 #include "MessageHandler.h"
+#include "MamManager.h"
 #include "QXmppLogger.h"
 #include "QXmppUtils.h"
+#include "QXmppGlobal.h"
 #include "QXmppMessage.h"
+#include "QXmppTrustManager.h"
+#include "QXmppTrustMemoryStorage.h"
+#include "QXmppAtmTrustMemoryStorage.h"
+#include "QXmppAtmManager.h"
 #include "QXmppOmemoManager.h"
-
+#include "QXmppOmemoMemoryStorage.h"
+#include "QXmppPubSubManager.h"
+#include "QXmppCarbonManager.h"
+#include "QXmppClient.h"
+#include "QXmppPubSubItem.h"
 
 #include "System.h"
 
 Shmong::Shmong(QObject *parent) : QObject(parent),
-    client_(new XmppClient(this)),
+    client_(new QXmppClient(this)),
     rosterController_(new RosterController(this)),
     persistence_(new Persistence(this)),
     settings_(new Settings(this)),
@@ -46,7 +55,7 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     connectionHandler_(new ConnectionHandler(this)),
 //    httpFileUploadManager_(new HttpFileUploadManager(this)),
     messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, this)),
-//    mamManager_(new MamManager(persistence_, this)),
+    mamManager_(new MamManager(persistence_, this)),
 //    mucManager_(new MucManager(this)),
 //    discoInfoHandler_(new DiscoInfoHandler(httpFileUploadManager_, mamManager_, this)),
     jid_(""), password_(""),
@@ -55,7 +64,7 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
 {
     qApp->setApplicationVersion(version_);
 
-    connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
+//   connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
 
     connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
 #if 0
@@ -107,11 +116,6 @@ Shmong::~Shmong()
 
     if (connectionHandler_->isConnected())
     {
-#if 0
-        softwareVersionResponder_->stop();
-
-        delete softwareVersionResponder_;
-#endif
         delete client_;
     }
 }
@@ -126,6 +130,8 @@ void Shmong::slotAboutToQuit()
 
 void Shmong::mainConnect(const QString &jid, const QString &pass)
 {
+    const QObject context;
+
     qDebug() << "main connect " << jid;
     persistence_->openDatabaseForJid(jid);
 
@@ -141,57 +147,62 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
     // setup the xmpp client
 
-#if 0
-    stanzaId_->setupWithClient(client_);
-#endif
     connectionHandler_->setupWithClient(client_);
     messageHandler_->setupWithClient(client_);
-#if 0
-    stanzaId_->setupWithClient(client_);
-
-    // configure the xmpp client
-    softwareVersionResponder_ = new Swift::SoftwareVersionResponder(client_->getIQRouter());
-    softwareVersionResponder_->setVersion("Shmong", version_.toStdString());
-    softwareVersionResponder_->start();
-    client_->setSoftwareVersion("Shmong", version_.toStdString());
-
-    // register capabilities
-    Swift::DiscoInfo discoInfo;
-    discoInfo.addIdentity(Swift::DiscoInfo::Identity("shmong", "client", "phone"));
-
-    // http://xmpp.org/extensions/xep-0184.html, MessageDeliveryReceiptsFeature
-    discoInfo.addFeature(Swift::DiscoInfo::MessageDeliveryReceiptsFeature);
-
-    // https://xmpp.org/extensions/xep-0333.html
-    discoInfo.addFeature(ChatMarkers::chatMarkersIdentifier.toStdString());
-
-    // https://xmpp.org/extensions/xep-0280.html
-    discoInfo.addFeature(Swift::DiscoInfo::MessageCarbonsFeature);
-
-#endif
-
-    // omemo
-    Settings settings;
-    if (settings.getSoftwareFeatureOmemoEnabled() == true)
-    {
-#if 0
-        // Need to add a persistent storage
-        client_->addExtension(new QXmppOmemoManager);
-#endif
-    }
-
-#if 0
-    // identify myself
-    client_->getDiscoManager()->setCapsNode("https://github.com/geobra/shmong");
-
-    // setup this disco info
-    client_->getDiscoManager()->setDiscoInfo(discoInfo);
-
-    // finaly try to connect
-#endif
 
     client_->logger()->setLoggingType(QXmppLogger::StdoutLogging);
-    client_->connectToServer(jid, pass);
+
+    pubsubManager_ = new QXmppPubSubManager();
+    client_->addExtension(pubsubManager_);
+
+    // Carbon copies
+    carbonManager_ = new QXmppCarbonManager;
+    client_->addExtension(carbonManager_);
+
+    // omemo
+    if (settings_->getSoftwareFeatureOmemoEnabled() == true)
+    {
+        // Need to add a persistent storage
+        omemoStorage_ = new QXmppOmemoMemoryStorage();
+
+        trustStorage_ = new QXmppTrustMemoryStorage();
+        trustManager_ = new QXmppTrustManager(trustStorage_);
+        client_->addExtension(trustManager_);
+        
+        omemoManager_ = new QXmppOmemoManager(omemoStorage_);
+        client_->addExtension(omemoManager_);
+
+        connect(carbonManager_, &QXmppCarbonManager::messageSent, omemoManager_, &QXmppOmemoManager::handleMessage);        
+        connect(carbonManager_, &QXmppCarbonManager::messageReceived, omemoManager_, &QXmppOmemoManager::handleMessage);        
+
+        omemoManager_->setSecurityPolicy(QXmpp::TrustSecurityPolicy::NoSecurityPolicy);
+        omemoManager_->setNewDeviceAutoSessionBuildingEnabled(true);
+        omemoManager_->setAcceptedSessionBuildingTrustLevels(ANY_TRUST_LEVEL);
+        omemoManager_->load();
+    }
+
+    connect(client_, &QXmppClient::connected, this, &Shmong::intialSetupOnFirstConnection);
+/*
+    connect(client_, &QXmppClient::connected, this, [=]() {
+
+        qDebug() << "QXmppClient::connected" << endl;
+        qDebug() << "OwnDevice label:" << omemoManager_->ownDevice().label() << endl;
+
+        carbonManager_->setCarbonsEnabled(true);  
+
+        if(omemoManager_ != nullptr)
+            omemoManager_->setUp();
+    });
+*/
+
+    QXmppConfiguration config;
+
+    config.setJid(jid);
+    config.setPassword(pass);
+    config.setResource(resourceName);
+
+    qDebug() << "try to connect" << endl;
+    client_->connectToServer(config);
 
     // for saving on connection success
     if (settings_->getSaveCredentials() == true)
@@ -202,7 +213,6 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
 //    httpFileUploadManager_->setCompressImages(settings_->getCompressImages());
 //    httpFileUploadManager_->setLimitCompression(settings_->getLimitCompression());
-    qDebug() << "main end " << jid;
 }
 
 void Shmong::mainDisconnect()
@@ -223,29 +233,35 @@ void Shmong::reConnect()
 #endif
 }
 
+void Shmong::omemoResetAll()
+{
+    if(omemoManager_ != nullptr)
+    {
+        omemoManager_->resetAll();
+    }    
+}
+
 void Shmong::intialSetupOnFirstConnection()
 {
-    // Request the roster
-    rosterController_->setupWithClient(client_);
-#if 0
+    qDebug() << "intialSetupOnFirstConnection" << endl;
 
+    rosterController_->setupWithClient(client_);
+    mamManager_->setupWithClient(client_);
+
+    carbonManager_->setCarbonsEnabled(true);  
+
+    if(omemoManager_ != nullptr)
+        omemoManager_->setUp();
+
+#if 0
     // pass the client pointer to the httpFileUploadManager
     httpFileUploadManager_->setupWithClient(client_);
-
-    // init mam
-    mamManager_->setupWithClient(client_);
 
     // init and setup discoInfoHandler
     discoInfoHandler_->setupWithClient(client_);
 
     // init and setup mucManager
     mucManager_->setupWithClient(client_);
-
-    // init and setup omemo stuff
-    if (settings_->getSoftwareFeatureOmemoEnabled() == true)
-    {
-        lurchAdapter_->setupWithClient(client_);
-    }
 #endif
 
     // Save account data
@@ -364,11 +380,16 @@ bool Shmong::canSendFile()
 
 bool Shmong::isOmemoUser(const QString& jid)
 {
-#if 0
-    return lurchAdapter_->isOmemoUser(jid);
-#else
-    return false;
-#endif
+    /*
+    bool returnValue;
+
+    auto future = omemoManager_->devices(QStringList(jid));
+    await(future, this, [=, &returnValue](QVector<QXmppOmemoDevice> devices)) {
+     returnValue == devices.isEmpty() == false;
+    }
+    return returnValue;
+    */
+    return true;
 }
 
 QString Shmong::getAttachmentPath()

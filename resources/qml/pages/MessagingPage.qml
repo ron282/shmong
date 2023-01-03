@@ -10,7 +10,6 @@ Page {
     id: page;
     allowedOrientations: Orientation.All;
 
-/*
     onStatusChanged: {
         if (status === PageStatus.Active) {
             pageStack.pushAttached(Qt.resolvedUrl("MessagingSettingsPage.qml"),{ "conversationId": conversationId })
@@ -21,7 +20,6 @@ Page {
             }
         }
     }
-*/
 
     property string conversationId : "";
     property bool isGroup : shmong.rosterController.isGroup(conversationId);
