@@ -76,7 +76,7 @@ SOURCES += \
     source/persistence/SessionController.cpp \
     source/persistence/GcmController.cpp \
     source/persistence/Persistence.cpp \
-    source/persistence/OmemoDbStorage.cpp \
+    source/persistence/OmemoController.cpp \
 #    source/xep/httpFileUpload/XmlHttpUploadContentHandler.cpp \
 #    source/xep/httpFileUpload/HttpFileuploader.cpp \
 #    source/xep/httpFileUpload/HttpFileUploadManager.cpp \
@@ -115,7 +115,7 @@ HEADERS += source/base/Shmong.h \
     source/persistence/SessionController.h \
     source/persistence/GcmController.h \
     source/persistence/Persistence.h \
-    source/persistence/OmemoDbStorage.h \
+    source/persistence/OmemoController.h \
 #    source/xep/httpFileUpload/XmlHttpUploadContentHandler.h \
 #    source/xep/httpFileUpload/HttpFileuploader.h \
 #    source/xep/httpFileUpload/HttpFileUploadManager.h \

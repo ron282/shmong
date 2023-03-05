@@ -7,6 +7,7 @@ class Database;
 class MessageController;
 class SessionController;
 class GcmController;
+class OmemoController;
 
 class Persistence : public QObject
 {
@@ -51,6 +52,9 @@ public slots:
     void removeMessage(const QString &id, const QString &jid);
     void setCurrentChatPartner(QString const &jid);
 
+public:
+    OmemoController* getOmemoController();
+
 private:
 #ifdef DBUS
 public:
@@ -63,6 +67,7 @@ public:
     MessageController *messageController_;
     SessionController *sessionController_;
     GcmController *gcmController_;
+    OmemoController *omemoController_;
 
     QString currentChatPartner_;
     bool persistenceValid_;

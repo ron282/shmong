@@ -21,9 +21,9 @@ ConnectionHandler::ConnectionHandler(QObject *parent) : QObject(parent),
     connect(ipHeartBeatWatcher_, SIGNAL(triggered()), this, SLOT(tryStablishServerConnection()));
     connect(ipHeartBeatWatcher_, SIGNAL(finished()), ipHeartBeatWatcher_, SLOT(deleteLater()));
 #else
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(tryStablishServerConnection()));
-    timer->start(60000 * 20); // 20 minutes
+//    QTimer *timer = new QTimer(this);
+//    connect(timer, SIGNAL(timeout()), this, SLOT(tryStablishServerConnection()));
+//    timer->start(60000 * 20); // 20 minutes
 #endif
 
     ipHeartBeatWatcher_->start();
@@ -45,7 +45,7 @@ void ConnectionHandler::setupWithClient(QXmppClient* client)
     {
         client_ = client;
 
-        client_->connect(client_, &QXmppClient::stateChanged, this, &ConnectionHandler::handleStateChanged);
+        connect(client_, &QXmppClient::stateChanged, this, &ConnectionHandler::handleStateChanged);
         //xmppPingController_->setupWithClient(client_);
     }
 }
@@ -116,7 +116,7 @@ void ConnectionHandler::tryReconnect()
 
     if (initialConnectionSuccessfull_ == true && hasInetConnection_ == true)
     {
-#if 0   //Check if this is still needed
+#if 0  //Check if this is still needed
         // try to disconnect the old session from before network disturbtion
         client_->disconnect();
 

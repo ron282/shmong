@@ -13,6 +13,7 @@
 
 #include "RosterController.h"
 #include "Persistence.h"
+#include "OmemoController.h"
 #include "MessageController.h"
 #include "ConnectionHandler.h"
 #include "CryptoHelper.h"
@@ -46,6 +47,18 @@
 
 #include "System.h"
 
+template<typename T, typename Handler>
+void await(const QFuture<T> &future, QObject *context, Handler handler)
+{
+    auto *watcher = new QFutureWatcher<T>(context);
+    QObject::connect(watcher, &QFutureWatcherBase::finished,
+                     context, [watcher, handler = std::move(handler)]() mutable {
+                         handler(watcher->result());
+                         watcher->deleteLater();
+                     });
+    watcher->setFuture(future);
+}
+
 Shmong::Shmong(QObject *parent) : QObject(parent),
     client_(new QXmppClient(this)),
     rosterController_(new RosterController(this)),
@@ -60,13 +73,13 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
 //    discoInfoHandler_(new DiscoInfoHandler(httpFileUploadManager_, mamManager_, this)),
     jid_(""), password_(""),
     version_("0.1.0"),
-    notSentMsgId_("")
+    notSentMsgId_(""),
+    omemoLoaded_(false)
 {
     qApp->setApplicationVersion(version_);
 
-//   connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
-
-    connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
+   connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
+//   connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
 #if 0
     connect(httpFileUploadManager_, SIGNAL(fileUploadedForJidToUrl(QString,QString,QString)),
             this, SLOT(fileUploaded(QString,QString,QString)));
@@ -163,13 +176,11 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     if (settings_->getSoftwareFeatureOmemoEnabled() == true)
     {
         // Need to add a persistent storage
-        omemoStorage_ = new QXmppOmemoMemoryStorage();
-
         trustStorage_ = new QXmppTrustMemoryStorage();
         trustManager_ = new QXmppTrustManager(trustStorage_);
         client_->addExtension(trustManager_);
         
-        omemoManager_ = new QXmppOmemoManager(omemoStorage_);
+        omemoManager_ = new QXmppOmemoManager(persistence_->getOmemoController());
         client_->addExtension(omemoManager_);
 
         connect(carbonManager_, &QXmppCarbonManager::messageSent, omemoManager_, &QXmppOmemoManager::handleMessage);        
@@ -178,22 +189,15 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
         omemoManager_->setSecurityPolicy(QXmpp::TrustSecurityPolicy::NoSecurityPolicy);
         omemoManager_->setNewDeviceAutoSessionBuildingEnabled(true);
         omemoManager_->setAcceptedSessionBuildingTrustLevels(ANY_TRUST_LEVEL);
-        omemoManager_->load();
+
+        auto future = omemoManager_->load();
+        await(future, this, [=](bool isLoaded) {
+            if(isLoaded == false) {
+                qDebug() << "Error loading Omemo data" << endl; 
+            }
+            omemoLoaded_ = isLoaded;
+        });
     }
-
-    connect(client_, &QXmppClient::connected, this, &Shmong::intialSetupOnFirstConnection);
-/*
-    connect(client_, &QXmppClient::connected, this, [=]() {
-
-        qDebug() << "QXmppClient::connected" << endl;
-        qDebug() << "OwnDevice label:" << omemoManager_->ownDevice().label() << endl;
-
-        carbonManager_->setCarbonsEnabled(true);  
-
-        if(omemoManager_ != nullptr)
-            omemoManager_->setUp();
-    });
-*/
 
     QXmppConfiguration config;
 
@@ -201,7 +205,6 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     config.setPassword(pass);
     config.setResource(resourceName);
 
-    qDebug() << "try to connect" << endl;
     client_->connectToServer(config);
 
     // for saving on connection success
@@ -243,14 +246,13 @@ void Shmong::omemoResetAll()
 
 void Shmong::intialSetupOnFirstConnection()
 {
-    qDebug() << "intialSetupOnFirstConnection" << endl;
+    qDebug() << "First connection" << endl;
 
     rosterController_->setupWithClient(client_);
     mamManager_->setupWithClient(client_);
 
-    carbonManager_->setCarbonsEnabled(true);  
-
-    if(omemoManager_ != nullptr)
+    carbonManager_->setCarbonsEnabled(true);
+    if(omemoLoaded_ == false)
         omemoManager_->setUp();
 
 #if 0
@@ -366,7 +368,7 @@ Settings* Shmong::getSettings()
 
 bool Shmong::connectionState() const
 {
-    return connectionHandler_->isConnected();
+    return client_->isConnected();
 }
 
 bool Shmong::canSendFile()

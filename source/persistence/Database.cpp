@@ -99,6 +99,8 @@ bool Database::open(QString const &jid)
              * - minor redundant data
              */
 
+            qDebug() << "database " << dbName << " is opened" << endl;
+
             databaseValid_ = true; // will be set to false again on error
 
             // table for all the messages
@@ -142,16 +144,19 @@ bool Database::open(QString const &jid)
                 }
             }
 
-            // another table for the omemo identity
+            // tables for the omemo identity
+
             if (! database_.tables().contains( sqlIdentityTable_ ))
             {
+                qDebug() << "create sqlIdentityTable_" << endl;
+
                 QString sqlCreateCommand = "create table " + sqlIdentityTable_ +
                         " (" + sqlOwnDeviceId_ + " INT UNSIGNED NOT NULL, " 
-                             + sqlOwnDeviceLabel_ + " TEXT NOT NULL, " 
-                             + sqlPrivateIdentityKey_ + " BLOB NOT NULL, " 
-                             + sqlPublicIdentityKey_ + " BLOB NOT NULL, "
-                             + sqlLatestSignedPreKeyId_ + " INT UNSIGNED NOT NULL, "
-                             + sqlLatestPreKeyId_ + " INTEGER NOT NULL, "
+                             + sqlOwnDeviceLabel_ + " TEXT, " 
+                             + sqlPrivateIdentityKey_ + " TEXT, " 
+                             + sqlPublicIdentityKey_ + " TEXT, "
+                             + sqlLatestSignedPreKeyId_ + " INT UNSIGNED, "
+                             + sqlLatestPreKeyId_ + " INTEGER, "
                              + "PRIMARY KEY ( " + sqlOwnDeviceId_ + ") )";
 
                 if (query.exec(sqlCreateCommand) == false)
@@ -161,13 +166,14 @@ bool Database::open(QString const &jid)
                 }
             }
 
-            // another table for the omemo Signed PreKeys
             if (! database_.tables().contains( sqlSignedPreKeyTable_ ))
             {
+                qDebug() << "create sqlSignedPreKeyTable_" << endl;
+
                 QString sqlCreateCommand = "create table " + sqlSignedPreKeyTable_ +
                         " (" + sqlSignedPreKeyId_ + " INT UNSIGNED NOT NULL, " 
-                             + sqlSignedPreKeyCreationDate_ + " TIMESTAMP NOT NULL, " 
-                             + sqlSignedPreKeyData_ + " BLOB NOT NULL, " 
+                             + sqlSignedPreKeyCreationDate_ + " TIMESTAMP, " 
+                             + sqlSignedPreKeyData_ + " TEXT, " 
                              + "PRIMARY KEY ( " + sqlSignedPreKeyId_ + ") )";
 
                 if (query.exec(sqlCreateCommand) == false)
@@ -177,12 +183,13 @@ bool Database::open(QString const &jid)
                 }
             }
 
-            // another table for the omemo Signed PreKeys
             if (! database_.tables().contains( sqlPreKeyTable_ ))
             {
+                qDebug() << "create sqlPreKeyTable_" << endl;
+
                 QString sqlCreateCommand = "create table " + sqlPreKeyTable_ +
                         " (" + sqlPreKeyId_ + " INT UNSIGNED NOT NULL, " 
-                             + sqlPreKeyData_ + " BLOB NOT NULL, " 
+                             + sqlPreKeyData_ + " TEXT, " 
                              + "PRIMARY KEY ( " + sqlPreKeyId_ + ") )";
 
                 if (query.exec(sqlCreateCommand) == false)
@@ -192,18 +199,19 @@ bool Database::open(QString const &jid)
                 }
             }
 
-            // another table for the omemo sessions
             if (! database_.tables().contains( sqlDevicesTable_ ))
             {
+                qDebug() << "create sqlDevicesTable_" << endl;
+
                 QString sqlCreateCommand = "create table " + sqlDevicesTable_ +
                         " (" + sqlJid_ + " TEXT NOT NULL, " 
                              + sqlDeviceId_ + " INT UNSIGNED NOT NULL, " 
-                             + sqlDeviceLabel_ + " TEXT NOT NULL, " 
-                             + sqlDeviceKeyId_ + " BLOB NOT NULL, " 
-                             + sqlDeviceSession_ + " BLOB NOT NULL, " 
-                             + sqlDeviceUnrespondedSentStanza_ + " INTEGER NOT NULL, " 
-                             + sqlDeviceUnrespondedReceivedStanza_ + " INTEGER NOT NULL, " 
-                             + sqlRemoveDate_ + " TIMESTAMP NOT NULL, " 
+                             + sqlDeviceLabel_ + " TEXT, " 
+                             + sqlDeviceKeyId_ + " TEXT, " 
+                             + sqlDeviceSession_ + " TEXT, " 
+                             + sqlDeviceUnrespondedSentStanza_ + " INTEGER, " 
+                             + sqlDeviceUnrespondedReceivedStanza_ + " INTEGER, " 
+                             + sqlRemoveDate_ + " TIMESTAMP, " 
                              + "PRIMARY KEY ( " + sqlJid_ + ", " + sqlDeviceId_ + ") )";
 
                 if (query.exec(sqlCreateCommand) == false)

@@ -55,7 +55,7 @@ void RosterController::setupWithClient(QXmppClient *qXmppClient)
  */
 void RosterController::handleJidAdded(const QString &bareJid)
 {
-    qDebug() << "################# RosterController::handleJidAdded: " << bareJid;
+    //qDebug() << "################# RosterController::handleJidAdded: " << bareJid;
     //dumpRosterList();
 
     if (qXmppRosterManager_ != nullptr)
@@ -75,7 +75,7 @@ void RosterController::handleJidAdded(const QString &bareJid)
 
 void RosterController::handleJidUpdated(const QString &bareJid)
 {
-    qDebug() << "############# RosterController::handleJidUpdated " << bareJid;
+    //qDebug() << "############# RosterController::handleJidUpdated " << bareJid;
     dumpRosterList();
 
     if (isJidInRoster(bareJid) == false && qXmppRosterManager_ != nullptr)
@@ -117,7 +117,7 @@ bool RosterController::updateNameForJid(const QString &bareJid, const QString &n
 
 bool RosterController::updateSubscriptionForJid(const QString &bareJid, QXmppRosterIq::Item::SubscriptionType subscription)
 {
-    qDebug()  << "-- updateSubscriptionForJid: " << bareJid << ", subs: " << subscription;
+    //qDebug()  << "-- updateSubscriptionForJid: " << bareJid << ", subs: " << subscription;
 
     bool somethingChanged = false;
 
@@ -260,7 +260,7 @@ void RosterController::handlePresenceChanged(const QString &bareJid, const QStri
 
 void RosterController::handleJidRemoved(const QString &bareJid)
 {
-    qDebug() << "############ RosterController::handleJidRemoved: " << bareJid;
+    //qDebug() << "############ RosterController::handleJidRemoved: " << bareJid;
     dumpRosterList();
 
     bool somethingChanged = false;
@@ -327,7 +327,7 @@ void RosterController::handleRosterReceived()
 
 void RosterController::handleVCardChanged(const QXmppVCardIq &vCard)
 {
-    qDebug() << "vCard received";
+    //qDebug() << "vCard received";
 
     const QString bareJid = vCard.from();
     const QString newHash = QCryptographicHash::hash(vCard.photo(), QCryptographicHash::Md5);
@@ -453,7 +453,7 @@ void RosterController::bindJidUpdateMethodes()
 
 void RosterController::addContact(const QString& jid, const QString& name)
 {
-    qDebug() << "addContact: " << jid << ", name: " << name;
+    //qDebug() << "addContact: " << jid << ", name: " << name;
 
     //TODO Check jid is valid
 
@@ -510,7 +510,7 @@ bool RosterController::isJidInRoster(const QString& bareJid)
 
 void RosterController::addGroupAsContact(QString groupJid, QString groupName)
 {
-    qDebug() << "addGroupAsContact";
+    //qDebug() << "addGroupAsContact";
     dumpRosterList();
 
     if (isJidInRoster(groupJid) == false)
@@ -614,7 +614,7 @@ QString RosterController::getTypeForJid(itemAttribute const &attribute, QString 
 
 bool RosterController::appendToRosterIfNotAlreadyIn(const QString& jid)
 {
-    qDebug() << "----------------- appendToRosterIfNotAlreadyIn ----------  " << jid;
+    //qDebug() << "----------------- appendToRosterIfNotAlreadyIn ----------  " << jid;
     if (isJidInRoster(jid) == false // not already in
             &&
             (! jid.compare( qXmppClient_->configuration().jidBare(), Qt::CaseInsensitive) == 0)) // not the user of this client instance

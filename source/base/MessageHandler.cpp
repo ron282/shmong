@@ -73,7 +73,7 @@ void MessageHandler::handleMessageReceived(const QXmppMessage &message)
         bool isLink = false;
 
         QString type = "txt";
-        QString messageId = message.id();
+        QString messageId = message.stanzaId();
 
         if (! message.outOfBandUrl().isEmpty())  // it's an url
         {
@@ -143,6 +143,7 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
 
     msg.setReceiptRequested(true);
     msg.setMarkable(true);
+    msg.setStanzaId(QXmppUtils::generateStanzaUuid());
 
     // exchange body by omemo stuff if applicable
     if ((settings_->getSoftwareFeatureOmemoEnabled() == true)
@@ -164,30 +165,20 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
         msg.setType(QXmppMessage::GroupChat);
     }
 
-    qDebug() << "sendMessage" << "to:" << msg.to() << "id:" << msg.id() << "security :" << security << " body:" << message << endl;
+    qDebug() << "sendMessage" << "to:" << msg.to() << "id:" << msg.stanzaId() << "security :" << security << " body:" << message << endl;
 
-    persistence_->addMessage( msg.id(),
+    persistence_->addMessage( msg.stanzaId(),
                               QXmppUtils::jidToBareJid(msg.to()),
                               QXmppUtils::jidToResource(msg.to()),
                               message, type, 0, security);
 
-    emit messageSent(msg.id());
+    emit messageSent(msg.stanzaId());
 
-    QFutureWatcher<QXmpp::SendResult> watcher;
-
-
-    auto future = client_->send(std::move(msg), sendParams);
-
-    watcher.setFuture(future);
-
-    connect(&watcher, &QFutureWatcher<QXmpp::SendResult>::finished, this, [=]() {
-        auto v = future.result();
-        auto error = std::get_if<QXmpp::SendError>(&v);
-        if(error == nullptr)
-            qDebug() << "send successful" << endl;
-        else
-            qDebug() << "send failed. Error:" << error->text << endl;
-    });
+    if(security) {
+        client_->send(std::move(msg), sendParams);
+    } else {
+        client_->sendUnencrypted(std::move(msg), sendParams);
+    }
 }
 
 void MessageHandler::sendDisplayedForJid(const QString &jid)

@@ -1,16 +1,16 @@
-#ifndef OMEMODBSTORAGE_H
-#define OMEMODBSTORAGE_H
+#ifndef OMEMOCONTROLLER_H
+#define OMEMOCONTROLLER_H
 
 #include "QXmppOmemoStorage.h"
 #include "Database.h"
 
 #include <QSqlTableModel>
 
-class QXmppOmemoDbStorage : public QXmppOmemoStorage
+class OmemoController : public QXmppOmemoStorage
 {
 public:
-    QXmppOmemoDbStorage(Database *db);
-    ~QXmppOmemoDbStorage() override;
+    OmemoController(Database *db, QObject *parent);
+    ~OmemoController() override;
 
     void setup();
 
@@ -31,6 +31,7 @@ public:
     QFuture<void> resetAll() override;
 
 private:
+    bool isDevicePresentInDatabase(const QString &jid, uint32_t deviceId);
     void printSqlError(QSqlTableModel *table);
 
     Database *database_;
@@ -41,4 +42,4 @@ private:
 };
 
 
-#endif  // OMEMODBSTORAGE_H
+#endif  // OMEMOCONTROLLER_H

@@ -16,7 +16,8 @@ class ConnectionHandler;
 class QXmppPubSubManager;
 class QXmppTrustMemoryStorage;
 class QXmppTrustManager;
-class QXmppOmemoMemoryStorage;
+//class QXmppOmemoMemoryStorage;
+class QXmppOmemoStorage;
 class QXmppOmemoManager;
 class QXmppCarbonManager;
 class QXmppClient;
@@ -129,10 +130,7 @@ public:
     ConnectionHandler* connectionHandler_;
     QXmppPubSubManager *pubsubManager_;
     QXmppTrustMemoryStorage *trustStorage_;
-//    QXmppAtmTrustMemoryStorage *trustStorage_;
     QXmppTrustManager* trustManager_; 
-//    QXmppAtmManager* trustManager_; 
-    QXmppOmemoMemoryStorage *omemoStorage_;
     QXmppOmemoManager* omemoManager_;     
     QXmppCarbonManager *carbonManager_;
 
@@ -152,5 +150,7 @@ public:
 
     const QString version_;
     QString notSentMsgId_;
+
+    bool omemoLoaded_;
 };
 

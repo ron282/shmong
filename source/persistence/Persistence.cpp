@@ -3,6 +3,7 @@
 #include "MessageController.h"
 #include "SessionController.h"
 #include "GcmController.h"
+#include "OmemoController.h"
 
 #include <QDebug>
 
@@ -12,6 +13,7 @@ Persistence::Persistence(QObject *parent)
       messageController_(new MessageController(db_, this)),
       sessionController_(new SessionController(db_, this)),
       gcmController_(new GcmController(db_, this)),
+      omemoController_(new OmemoController(db_, this)),
       currentChatPartner_(""),
       persistenceValid_(false)
 {
@@ -29,6 +31,7 @@ void Persistence::openDatabaseForJid(QString const &jid)
         messageController_->setup();
         sessionController_->setup();
         gcmController_->setup();
+        omemoController_->setup();
 
         persistenceValid_ = true;
     }
@@ -173,6 +176,11 @@ SessionController* Persistence::getSessionController()
 GcmController* Persistence::getGcmController()
 {
     return gcmController_;
+}
+
+OmemoController* Persistence::getOmemoController()
+{
+    return omemoController_;
 }
 
 const QString Persistence::getResourcesOfNewestDisplayedMsgforJid(const QString& jid)
