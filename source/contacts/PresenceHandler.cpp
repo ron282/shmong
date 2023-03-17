@@ -12,71 +12,53 @@ void PresenceHandler::setupWithClient(Swift::Client* client)
     if (client != NULL)
     {
         client_ = client;
-
-        client_->onPresenceReceived.connect(boost::bind(&PresenceHandler::handlePresenceReceived, this, _1));
-        client_->onPresenceChange.connect(boost::bind(&PresenceHandler::handlePresenceChanged, this, _1));
+        connect(client_, QXmppClient::presenceReceived, this, PresenceHandler::handlePresenceReceived);
     }
 }
 
-void PresenceHandler::handlePresenceReceived(Swift::Presence::ref presence)
+void PresenceHandler::handlePresenceReceived(const QXmppPresence & presence)
 {
     // Automatically approve subscription requests
     // FIXME show to user and let user decide
-    if (presence->getType() == Swift::Presence::Subscribe)
+
+    QString jid(QXmppUtils::jidToBareJid(presence.from());
+
+    if(jid != QXmppUtils::jidToBareJid(presence.to()) // only interested in updates of other clients. not our self sent presence msgs
     {
-        // answer subscription request
-        Swift::Presence::ref subscriptionRequestResponse = Swift::Presence::create();
-        subscriptionRequestResponse->setTo(presence->getFrom());
-        subscriptionRequestResponse->setFrom(client_->getJID());
-        subscriptionRequestResponse->setType(Swift::Presence::Subscribed);
-        client_->sendPresence(subscriptionRequestResponse);
-
-        // request subscription
-        Swift::Presence::ref subscriptionRequest = Swift::Presence::create();
-        subscriptionRequest->setTo(presence->getFrom());
-        subscriptionRequest->setFrom(client_->getJID());
-        subscriptionRequest->setType(Swift::Presence::Subscribe);
-        client_->sendPresence(subscriptionRequest);
-    }
-}
-
-void PresenceHandler::handlePresenceChanged(Swift::Presence::ref presence)
-{
-    //qDebug() << "handlePresenceChanged: type: " << presence->getType() << ", jid: " << QString::fromStdString(presence->getFrom());
-
-    Swift::JID jid = presence->getFrom();
-
-    if (jid.toBare().toString().compare(client_->getJID().toBare().toString()) != 0 ) // only interested in updates of other clients. not our self sent presence msgs
-    {
-
-        QString status = "";
-
-        if (presence->getType() == Swift::Presence::Available)
+        if (presence.type() == QXmppPresence::Available)
         {
-            std::vector<std::shared_ptr<Swift::Status> > availabilityPayloads = presence->getPayloads<Swift::Status>();
-
-            for (std::vector<std::shared_ptr<Swift::Status>>::iterator it = availabilityPayloads.begin() ; it != availabilityPayloads.end(); ++it)
-            {
-                status = QString::fromStdString((*it)->getText());
-                rosterController_->updateStatusForJid(jid, status);
-                break;
-            }
+            rosterController_->updateStatusForJid(jid, presence.statusText());
         }
 
-        if (jid.isValid())
-        {
-            RosterItem::Availability availability = RosterItem::AVAILABILITY_ONLINE;
+        RosterItem::Availability availability = RosterItem::AVAILABILITY_ONLINE;
 
-            if (presence->getType() == Swift::Presence::Unavailable
-                    || presence->getType() == Swift::Presence::Error
-                    || presence->getType() == Swift::Presence::Probe
-                    || presence->getType() == Swift::Presence::Unsubscribe
-                    || presence->getType() == Swift::Presence::Unsubscribed
-                    )
-            {
-                availability = RosterItem::AVAILABILITY_OFFLINE;
-            }
-            rosterController_->updateAvailabilityForJid(jid, availability);
+        if (presence.type() == QXmppPresence::Unavailable
+                || presence.type() == QXmppPresence::Error
+                || presence.type() == QXmppPresence::Probe
+                || presence.type() == QXmppPresence::Unsubscribe
+                || presence.type() == QXmppPresence::Unsubscribed)
+        {
+            availability = RosterItem::AVAILABILITY_OFFLINE;
+        }
+
+        rosterController_->updateAvailabilityForJid(jid, availability);
+
+        if (presence.type() == QXmppPresence::Subscribe)
+        {
+            QXmppPresence answer();
+
+            // accept subscription
+            asnwer.setType(QXmppPresence::Subscribed);
+            answer.setFrom(presence.to());
+            answer.setTo(presence.from());
+            client_->send(answer);
+
+            // request subscription
+            asnwer.setType(QXmppPresence::Subscribe);
+            answer.setFrom(presence.to());
+            answer.setTo(presence.from());
+            client_->send(answer);
         }
     }
 }
+

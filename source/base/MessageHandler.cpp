@@ -22,9 +22,9 @@
 
 
 MessageHandler::MessageHandler(Persistence *persistence, Settings * settings, RosterController* rosterController, QObject *parent) : QObject(parent),
-    persistence_(persistence), settings_(settings),
+    persistence_(persistence), settings_(settings), rosterController_(rosterController),
     downloadManager_(new DownloadManager(this)),
-    chatMarkers_(new ChatMarkers(persistence_, rosterController, this)),
+    chatMarkers_(nullptr),
     appIsActive_(true)
 {
     connect(settings_, SIGNAL(askBeforeDownloadingChanged(bool)), this, SLOT(setAskBeforeDownloading(bool)));
@@ -37,8 +37,10 @@ void MessageHandler::setupWithClient(QXmppClient* client)
     {
         client_ = client;
 
-        chatMarkers_->setupWithClient(client_);
         connect(client_, &QXmppClient::messageReceived, this, &MessageHandler::handleMessageReceived);
+
+        chatMarkers_ = new ChatMarkers(persistence_, rosterController_);
+        client_->addExtension(chatMarkers_);
 
         setAskBeforeDownloading(settings_->getAskBeforeDownloading());
     }
@@ -69,24 +71,25 @@ void MessageHandler::handleMessageReceived(const QXmppMessage &message)
 
     if (! message.body().isEmpty())
     {
-        QUrl oobUrl(message.outOfBandUrl());
-        bool isLink = false;
-
+        QUrl oobUrl;
         QString type = "txt";
-        QString messageId = message.stanzaId();
+        QString messageId = message.id();
 
-        if (! message.outOfBandUrl().isEmpty())  // it's an url
+        if(message.body().startsWith("aesgcm://"))
         {
-            isLink = true;
-            //isLink = security == 1 ? theBody.startsWith("aesgcm://") : isLink;
+            oobUrl = message.body();
+        }
+        else if (! message.outOfBandUrl().isEmpty() )  // it's an url
+        {
+            oobUrl = message.outOfBandUrl();
+        }
 
-            if(isLink)
-            {
-                type = QMimeDatabase().mimeTypeForFile(oobUrl.fileName()).name();
+        if(oobUrl.isValid())
+        {
+            type = QMimeDatabase().mimeTypeForFile(oobUrl.fileName()).name();
 
-                if(! askBeforeDownloading_)
-                    downloadManager_->doDownload(oobUrl, messageId); // keep the fragment in the sent message
-            }
+            if(! askBeforeDownloading_)
+                downloadManager_->doDownload(oobUrl, messageId); // keep the fragment in the sent message
         }
 
         bool isGroupMessage = false;
@@ -125,8 +128,7 @@ void MessageHandler::handleMessageReceived(const QXmppMessage &message)
         QString currentChatPartner = persistence_->getCurrentChatPartner();
         //qDebug() << "fromJid: " << message.from() << "current: " << currentChatPartner << ", isGroup: " << isGroupMessage << ", appActive? " << appIsActive_;
         if ( (currentChatPartner.compare(QXmppUtils::jidToBareJid(message.from()), Qt::CaseInsensitive) == 0) &&     // immediatelly send read notification if sender is current chat partner
-             (appIsActive_ == true)                                                                                  // but only if app is active
-             )
+             appIsActive_ )                                                                                          // but only if app is active
         {
             this->sendDisplayedForJid(currentChatPartner);
         }
@@ -144,6 +146,7 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
     msg.setReceiptRequested(true);
     msg.setMarkable(true);
     msg.setStanzaId(QXmppUtils::generateStanzaUuid());
+    msg.setId(msg.stanzaId());
 
     // exchange body by omemo stuff if applicable
     if ((settings_->getSoftwareFeatureOmemoEnabled() == true)

@@ -2,37 +2,30 @@
 #define DISCOINFOHANDLER_H
 
 #include <QObject>
-#include <Swiften/Swiften.h>
 
-class HttpFileUploadManager;
-class MamManager;
+class QXmppDiscoveryIq;
+class QXmppClient;
+class QXmppDiscoveryManager;
 
 class DiscoInfoHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit DiscoInfoHandler(HttpFileUploadManager* httpFileUploadManager, MamManager* mamManager, QObject *parent = 0);
-    ~DiscoInfoHandler();
+    explicit DiscoInfoHandler(QObject *parent = 0);
 
-    void setupWithClient(Swift::Client* client);
+    void setupWithClient(QXmppClient* client);
+    void requestInfo();
 
 signals:
-    void serverHasHttpUpload_(bool);
     void serverHasMam_(bool);
 
 public slots:
+    void discoInfoReceived(const QXmppDiscoveryIq &info);
+    void discoItemsReceived(const QXmppDiscoveryIq &items);
 
 private:
-    void handleServerDiscoInfoResponse(std::shared_ptr<Swift::DiscoInfo> info, Swift::ErrorPayload::ref error);
-    void handleDiscoServiceWalker(const Swift::JID & jid, std::shared_ptr<Swift::DiscoInfo> info);
-    void cleanupDiscoServiceWalker();
-    void handleServerDiscoItemsResponse(std::shared_ptr<Swift::DiscoItems> items, Swift::ErrorPayload::ref error);
-
-    HttpFileUploadManager* httpFileUploadManager_;
-    MamManager* mamManager_;
-    Swift::Client* client_;
-
-    QList<std::shared_ptr<Swift::DiscoServiceWalker> > danceFloor_;
+    QXmppClient* client_;
+    QXmppDiscoveryManager* discoveryManager_ ;
 };
 
 #endif // DISCOINFOHANDLER_H

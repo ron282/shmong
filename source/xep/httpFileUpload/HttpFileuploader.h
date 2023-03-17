@@ -24,11 +24,9 @@ signals:
     void errorOccurred();
 
 public slots:
-    void putFinished(QNetworkReply* reply);
-
     void displayProgress(qint64 bytesReceived, qint64 bytesTotal);
     void error(QNetworkReply::NetworkError code);
-    void finished();
+    void putFinished();
 
 private:
     QNetworkAccessManager* networkManager_;

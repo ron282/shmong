@@ -40,6 +40,7 @@ public:
 #endif
     QXmppClient* client_;
     Persistence* persistence_;
+    RosterController* rosterController_;
     Settings* settings_;
 
     DownloadManager* downloadManager_;

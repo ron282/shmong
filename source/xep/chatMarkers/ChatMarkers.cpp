@@ -2,28 +2,22 @@
 #include "Persistence.h"
 #include "RosterController.h"
 
-#include "QXmppClient.h"
 #include "QXmppUtils.h"
 #include "QXmppMessage.h"
 
 #include <QDebug>
 
-ChatMarkers::ChatMarkers(Persistence *persistence, RosterController *rosterController, QObject *parent) : QObject(parent),
-    qXmppClient_(NULL), persistence_(persistence), rosterController_(rosterController)
+ChatMarkers::ChatMarkers(Persistence *persistence, RosterController *rosterController) :
+    QXmppClientExtension(), persistence_(persistence), rosterController_(rosterController)
 {
 }
 
-void ChatMarkers::setupWithClient(QXmppClient *qXmppClient)
+QStringList ChatMarkers::discoveryFeatures() const
 {
-    if (qXmppClient != NULL)
-    {
-        qXmppClient_ = qXmppClient;
-        connect(qXmppClient_, &QXmppClient::messageReceived, this, &ChatMarkers::handleMessageReceived);
-    }
+    return QStringList("urn:xmpp:chat-markers:0");
 }
 
-
-void ChatMarkers::handleMessageReceived(const QXmppMessage &message)
+bool ChatMarkers::handleMessage(const QXmppMessage &message)
 {
     //  First handle the received stanza
     if (message.marker() != QXmppMessage::NoMarker)
@@ -61,6 +55,9 @@ void ChatMarkers::handleMessageReceived(const QXmppMessage &message)
             }
         }
     }
+
+    //continue processing
+    return false;
 }
 
 void ChatMarkers::sendDisplayedForJid(const QString& jid)
@@ -70,8 +67,6 @@ void ChatMarkers::sendDisplayedForJid(const QString& jid)
 
     QString displayedMsgId = messageIdAndState.first;
     int msgState = messageIdAndState.second;
-
-    //qDebug() << "id: " << displayedMsgId << ", state: " << msgState;
 
     if ( ( msgState != -1 ) && (! displayedMsgId.isEmpty()) && (! jid.isEmpty()) )
     {
@@ -96,10 +91,7 @@ void ChatMarkers::sendDisplayedForJid(const QString& jid)
             msg.setType(QXmppMessage::Normal);
         }
 
-        if(qXmppClient_ != nullptr)
-        {
-            qXmppClient_->sendPacket(msg);
-        }
+        client()->sendPacket(std::move(msg));
 
         // mark msg as confirmed. no further confirms of that msg
         persistence_->markMessageDisplayedConfirmedId(displayedMsgId);

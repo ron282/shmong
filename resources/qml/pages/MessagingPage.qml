@@ -488,7 +488,7 @@ Page {
         onClicked: {
             if (editbox.text.length === 0 && sendmsgview.attachmentPath.length === 0 && shmong.canSendFile()) {
                 sendmsgview.attachmentPath = ""
-                fileModel.searchPath = shmong.settings.ImagePaths
+                //fileModel.searchPath = shmong.settings.ImagePaths
                 pageStack.push(shmong.settings.SendOnlyImages ? imagePickerPage: filePickerPage)
             } else {
                 //console.log(sendmsgview.attachmentPath)

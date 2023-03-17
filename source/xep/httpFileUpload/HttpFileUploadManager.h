@@ -1,13 +1,13 @@
 #ifndef HTTPFILEUPLOADMANAGER_H
 #define HTTPFILEUPLOADMANAGER_H
 
-#include <Swiften/Swiften.h>
-
 #include <QObject>
 
 class QFile;
 class FileWithCypher;
 class HttpFileUploader;
+class QXmppClient;
+class QXmppUploadRequestManager;
 
 class HttpFileUploadManager : public QObject
 {
@@ -18,13 +18,13 @@ public:
     bool requestToUploadFileForJid(QString const &file, const QString &jid, bool encryptFile);
     QString getStatus();
 
-    void setupWithClient(Swift::Client* client);
+    void setupWithClient(QXmppClient* client);
 
     void setServerHasFeatureHttpUpload(bool hasFeature);
     bool getServerHasFeatureHttpUpload();
 
-    void setUploadServerJid(Swift::JID const & uploadServerJid);
-    Swift::JID getUploadServerJid();
+    void setUploadServerJid(QString const & uploadServerJid);
+    QString getUploadServerJid();
 
     void setMaxFileSize(unsigned int maxFileSize);
     unsigned int getMaxFileSize();
@@ -33,6 +33,7 @@ signals:
     void fileUploadedForJidToUrl(QString, QString, QString);
     void fileUploadFailedForJidToUrl();
     void showStatus(QString, QString);
+    void serverHasHttpUpload_(bool);
 
 public slots:
     void updateStatusString(QString string);
@@ -40,6 +41,7 @@ public slots:
     void errorReceived();
     void setCompressImages(bool CompressImages);
     void setLimitCompression(unsigned int limitCompression);
+    void handleServiceFoundChanged();
 
 private slots:
     void generateStatus(QString status);
@@ -47,7 +49,6 @@ private slots:
 private:
     HttpFileUploader* httpUpload_;
     void requestHttpUploadSlot();
-    void handleHttpUploadResponse(const std::string response);
 
     bool createAttachmentPath();
     QString createTargetFileName(QString source, QString suffix="");
@@ -60,8 +61,9 @@ private:
     FileWithCypher* file_;
     QString jid_;
 
-    Swift::Client* client_;
-    Swift::JID uploadServerJid_;
+    QXmppClient* client_;
+    QXmppUploadRequestManager* uploadRequestManager_;
+    QString uploadServerJid_;
 
     QString statusString_;
     QString getUrl_;

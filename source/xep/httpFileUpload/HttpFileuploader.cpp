@@ -10,7 +10,6 @@ HttpFileUploader::HttpFileUploader(QObject *parent) : QObject(parent),
     networkManager_(new QNetworkAccessManager(parent)), request_(new QNetworkRequest()),
     file_(nullptr)
 {
-    connect(networkManager_, SIGNAL(finished(QNetworkReply*) ), this, SLOT(putFinished(QNetworkReply*)));
 }
 
 HttpFileUploader::~HttpFileUploader()
@@ -50,7 +49,7 @@ void HttpFileUploader::upload(QString url, FileWithCypher* file)
             connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
                     this, SLOT(error(QNetworkReply::NetworkError)));
 
-            connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+            connect(reply, SIGNAL(finished()), this, SLOT(putFinished()));
         }
         else
         {
@@ -65,43 +64,30 @@ void HttpFileUploader::upload(QString url, FileWithCypher* file)
     }
 }
 
-void HttpFileUploader::putFinished(QNetworkReply* reply)
+void HttpFileUploader::putFinished()
 {
-    QByteArray response = reply->readAll();
-
-    //printf("response: %s\n", response.data() );
-    //printf("reply error %d\n", reply->error() );
-
     if (file_ != nullptr && file_->isOpen())
     {
         file_->close();
     }
 
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        emit updateStatus("done");
-        emit uploadSuccess(file_->getIvAndKey());
-    }
-    else
-    {
-        emit errorOccurred();
-    }
+    emit updateStatus("done");
+    emit uploadSuccess(file_->getIvAndKey());
 
     file_ = nullptr;
-}
-
-void HttpFileUploader::finished()
-{
-    qDebug() << "finished";
-
-    emit updateStatus("done");
 }
 
 void HttpFileUploader::error(QNetworkReply::NetworkError code)
 {
     // code 0 is success
     qDebug() << "error code: " << code;
-    QString status = "error: " + QString::number(code);
+    
+    if (file_ != nullptr && file_->isOpen())
+    {
+        file_->close();
+    }
+
+   QString status = "error: " + QString::number(code);
     emit updateStatus(status);
 }
 

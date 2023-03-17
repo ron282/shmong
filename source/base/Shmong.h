@@ -1,4 +1,3 @@
-#pragma once
 
 //#include "Persistence.h"
 #include "XmppClient.h"
@@ -8,6 +7,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QList>
+#include <QFutureWatcher>
 
 
 class RosterController;
@@ -16,7 +16,6 @@ class ConnectionHandler;
 class QXmppPubSubManager;
 class QXmppTrustMemoryStorage;
 class QXmppTrustManager;
-//class QXmppOmemoMemoryStorage;
 class QXmppOmemoStorage;
 class QXmppOmemoManager;
 class QXmppCarbonManager;
@@ -24,12 +23,11 @@ class QXmppClient;
 class QXmppAtmTrustMemoryStorage;
 class QXmppAtmManager;
 
-#if 0
 class HttpFileUploadManager;
+#if 0
 class MucManager;
-class DiscoInfoHandler;
-class StanzaId;
 #endif
+class DiscoInfoHandler;
 class MessageHandler;
 class MamManager;
 
@@ -39,6 +37,18 @@ constexpr auto ANY_TRUST_LEVEL = QXmpp::TrustLevel::Undecided |
             QXmpp::TrustLevel::AutomaticallyTrusted |
             QXmpp::TrustLevel::ManuallyTrusted |
             QXmpp::TrustLevel::Authenticated;
+
+template<typename T, typename Handler>
+void await(const QFuture<T> &future, QObject *context, Handler handler)
+{
+    auto *watcher = new QFutureWatcher<T>(context);
+    QObject::connect(watcher, &QFutureWatcherBase::finished,
+                     context, [watcher, handler = std::move(handler)]() mutable {
+                     handler(watcher->result());
+                         watcher->deleteLater();
+                     });
+    watcher->setFuture(future);
+}
 
 class Shmong : public QObject
 {
@@ -134,14 +144,11 @@ public:
     QXmppOmemoManager* omemoManager_;     
     QXmppCarbonManager *carbonManager_;
 
-
-#if 0
-    StanzaId *stanzaId_;
-    LurchAdapter* lurchAdapter_;
     HttpFileUploadManager* httpFileUploadManager_;
+#if 0
     MucManager *mucManager_;
-    DiscoInfoHandler* discoInfoHandler_;
 #endif
+    DiscoInfoHandler* discoInfoHandler_;
     MessageHandler* messageHandler_;
     MamManager *mamManager_;
 

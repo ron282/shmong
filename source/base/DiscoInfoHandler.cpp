@@ -1,87 +1,59 @@
 #include "DiscoInfoHandler.h"
-#include "HttpFileUploadManager.h"
-#include "MamManager.h"
 
-#include <QDebug>
+#include <QFuture>
 
-DiscoInfoHandler::DiscoInfoHandler(HttpFileUploadManager *httpFileUploadManager, MamManager *mamManager, QObject *parent) : QObject(parent),
-    httpFileUploadManager_(httpFileUploadManager), mamManager_(mamManager),
-    client_(nullptr), danceFloor_()
+#include "QXmppUtils.h"
+#include "QXmppClient.h"
+#include "QXmppDiscoveryIq.h"
+#include "QXmppDiscoveryManager.h"
+
+
+DiscoInfoHandler::DiscoInfoHandler(QObject *parent) : QObject(parent),
+    client_(nullptr), discoveryManager_(nullptr)
 {
 
 }
 
-DiscoInfoHandler::~DiscoInfoHandler()
-{
-    cleanupDiscoServiceWalker();
-}
-
-void DiscoInfoHandler::setupWithClient(Swift::Client* client)
+void DiscoInfoHandler::setupWithClient(QXmppClient* client)
 {
     if (client != nullptr)
     {
         client_ = client;
 
-        // request the discoInfo from server
-        std::shared_ptr<Swift::DiscoServiceWalker> topLevelInfo(
-                    new Swift::DiscoServiceWalker(Swift::JID(client_->getJID().getDomain()), client_->getIQRouter()));
-        topLevelInfo->onServiceFound.connect(boost::bind(&DiscoInfoHandler::handleDiscoServiceWalker, this, _1, _2));
-        topLevelInfo->beginWalk();
-        danceFloor_.append(topLevelInfo);
+        // Discovery Manager
+        discoveryManager_ = client_->findExtension<QXmppDiscoveryManager>();
+
+        connect(discoveryManager_, &QXmppDiscoveryManager::infoReceived, this, &DiscoInfoHandler::discoInfoReceived);
+        connect(discoveryManager_, &QXmppDiscoveryManager::itemsReceived, this, &DiscoInfoHandler::discoItemsReceived);
     }
 }
 
-void DiscoInfoHandler::handleDiscoServiceWalker(const Swift::JID & jid, std::shared_ptr<Swift::DiscoInfo> info)
+void DiscoInfoHandler::discoInfoReceived(const QXmppDiscoveryIq &info)
 {
-#if 0
-    qDebug() << "Shmong::handleDiscoWalkerService for '" << QString::fromStdString(jid.toString()) << "'.";
-    for(auto feature : info->getFeatures())
+    qDebug() << "discoInfoReceived" << endl;
+/*
+    auto features = info.features();
+
+    if(features.contains("urn:xmpp:mam:2")
     {
-        qDebug() << "Shmong::handleDiscoWalkerService feature '" << QString::fromStdString(feature) << "'.";
-    }
-#endif
-
-    const std::string httpUpload = "urn:xmpp:http:upload";
-
-    if (info->hasFeature(httpUpload))
-    {
-        qDebug() << QString::fromStdString(jid.toString()) << " has feature urn:xmpp:http:upload";
-        httpFileUploadManager_->setServerHasFeatureHttpUpload(true);
-        httpFileUploadManager_->setUploadServerJid(jid);
-        emit serverHasHttpUpload_(true);
-
-        foreach (Swift::Form::ref form, info->getExtensions())
-        {
-            if (form)
-            {
-                if ((*form).getFormType() == httpUpload)
-                {
-                    Swift::FormField::ref formField = (*form).getField("max-file-size");
-                    if (formField)
-                    {
-                        unsigned int maxFileSize = std::stoi((*formField).getTextSingleValue());
-                        //qDebug() << QString::fromStdString((*formField).getName()) << " val: " << maxFileSize;
-                        httpFileUploadManager_->setMaxFileSize(maxFileSize);
-                    }
-                }
-            }
-        }
-    }
-
-    if (info->hasFeature(MamManager::mamNs.toStdString()))
-    {
-        qDebug() << "### " << QString::fromStdString(jid.toString()) << " has " << MamManager::mamNs;
-        //mamManager_->setServerHasFeatureMam(true);
         emit serverHasMam_(true);
     }
+*/
 }
 
-void DiscoInfoHandler::cleanupDiscoServiceWalker()
+void DiscoInfoHandler::discoItemsReceived(const QXmppDiscoveryIq &items)
 {
-    for(auto walker : danceFloor_)
-    {
-        walker->endWalk();
-    }
+    qDebug() << "discoItemsReceived" << endl;
+    auto list = items.items();
 
-    danceFloor_.clear();
+    for(int i=0; i<list.size(); i++)
+    {
+        discoveryManager_->requestInfo(list[i].jid());
+    }
+}
+
+void DiscoInfoHandler::requestInfo()
+{
+    qDebug() << "Request Disco" << endl;
+    discoveryManager_->requestItems(QXmppUtils::jidToDomain(client_->configuration().jid()));
 }

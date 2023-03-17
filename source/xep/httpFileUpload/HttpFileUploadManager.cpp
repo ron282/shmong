@@ -5,6 +5,7 @@
 #include "System.h"
 #include "CryptoHelper.h"
 #include "FileWithCypher.h"
+#include "Shmong.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -17,7 +18,9 @@
 
 #include <QDebug>
 
-
+#include "QXmppClient.h"
+#include "QXmppHttpUploadIq.h"
+#include "QXmppUploadRequestManager.h"
 
 
 HttpFileUploadManager::HttpFileUploadManager(QObject *parent) : QObject(parent),
@@ -35,9 +38,29 @@ HttpFileUploadManager::HttpFileUploadManager(QObject *parent) : QObject(parent),
     busy_ = (! this->createAttachmentPath());
 }
 
-void HttpFileUploadManager::setupWithClient(Swift::Client* client)
+void HttpFileUploadManager::setupWithClient(QXmppClient* client)
 {
     client_ = client;
+    uploadRequestManager_ = new QXmppUploadRequestManager();
+    client->addExtension(uploadRequestManager_);
+
+    connect(uploadRequestManager_, &QXmppUploadRequestManager::serviceFoundChanged, this, &HttpFileUploadManager::handleServiceFoundChanged);
+}
+
+void HttpFileUploadManager::handleServiceFoundChanged()
+{
+    qDebug() << "upload service found" << endl;
+    
+    auto uploadServices = uploadRequestManager_->uploadServices();
+
+    if(uploadServices.size() > 0)
+    {
+        setServerHasFeatureHttpUpload(true);
+        setUploadServerJid(uploadServices[0].jid());
+        setMaxFileSize(uploadServices[0].sizeLimit());
+
+        emit serverHasHttpUpload_(true);
+    }
 }
 
 bool HttpFileUploadManager::requestToUploadFileForJid(const QString &file, const QString &jid, bool encryptFile)
@@ -108,12 +131,12 @@ bool HttpFileUploadManager::getServerHasFeatureHttpUpload()
     return serverHasFeatureHttpUpload_;
 }
 
-void HttpFileUploadManager::setUploadServerJid(Swift::JID const & uploadServerJid)
+void HttpFileUploadManager::setUploadServerJid(QString const & uploadServerJid)
 {
     uploadServerJid_ = uploadServerJid;
 }
 
-Swift::JID HttpFileUploadManager::getUploadServerJid()
+QString HttpFileUploadManager::getUploadServerJid()
 {
     return uploadServerJid_;
 }
@@ -132,75 +155,50 @@ void HttpFileUploadManager::requestHttpUploadSlot()
 {
     if (client_ != nullptr)
     {
+        auto uploadRequestManager = client_->findExtension<QXmppUploadRequestManager>();
+
         QString basename = QFileInfo(file_->fileName()).baseName() + "." + QFileInfo(file_->fileName()).completeSuffix();
 
-        std::string uploadRequest = "<request xmlns='urn:xmpp:http:upload'>"
-                + std::string("<filename>") + basename.toUtf8().toPercentEncoding().toStdString() + std::string("</filename>")
-                + std::string("<size>") + std::to_string(file_->size()) + std::string("</size></request>");
-
-        Swift::RawRequest::ref httpUploadRequest = Swift::RawRequest::create(Swift::IQ::Type::Get,
-                                                                             uploadServerJid_,
-                                                                             uploadRequest,
-                                                                             client_->getIQRouter());
-        httpUploadRequest->onResponse.connect(boost::bind(&HttpFileUploadManager::handleHttpUploadResponse, this, _1));
-        httpUploadRequest->send();
-    }
-}
-
-void HttpFileUploadManager::handleHttpUploadResponse(const std::string response)
-{
-    //qDebug() << "HttpFileUploadManager::handleHttpUploadResponse: " << QString::fromStdString(response);
-
-    QXmlSimpleReader* parser = new QXmlSimpleReader();
-    XmlHttpUploadContentHandler* handler = new XmlHttpUploadContentHandler();
-
-    parser->setContentHandler(handler);
-
-    QXmlInputSource xmlSource;
-    xmlSource.setData(QString::fromStdString(response));
-
-    if(parser->parse(xmlSource))
-    {
-        qDebug() << "get: " << handler->getGetUrl();
-        qDebug() << "put: " << handler->getPutUrl();
-
-        if (QUrl(handler->getPutUrl()).isValid() == true && QUrl(handler->getGetUrl()).isValid() == true)
+        if(!file_->initEncryptionOnRead(encryptFile_))
         {
-            QUrl url(handler->getGetUrl());
-
-            if(!file_->initEncryptionOnRead(encryptFile_))
-            {
-                //TODO delete file and signal failure
-                qDebug() << "error on init encryption for " << file_->fileName();
-            }
-
-            if( file_->getIvAndKey().size() > 0 )
-            {
-                url.setScheme("aesgcm");
-                url.setFragment(file_->getIvAndKey());
-            }
-
-            getUrl_ = url.toString(); 
-            QString attachmentFileName = System::getAttachmentPath() + QDir::separator() +  CryptoHelper::getHashOfString(getUrl_, true);
-
-            if(! file_->rename(attachmentFileName))
-            {
-                qWarning() << "failed to rename file to " << attachmentFileName;
-                emit fileUploadFailedForJidToUrl();
-            }
-            else
-            {
-                httpUpload_->upload(handler->getPutUrl(), file_);
-            }
+            //TODO delete file and signal failure
+            qWarning() << "error on init encryption for " << file_->fileName();
         }
-    }
-    else
-    {
-        qDebug() << "xml response parsing failed...";
-    }
 
-    delete (handler);
-    delete (parser);
+        auto future = uploadRequestManager->requestSlot(basename, file_->size(), QMimeDatabase().mimeTypeForFile(*file_), uploadServerJid_);
+        await(future, this, [=](QXmppUploadRequestManager::SlotResult result) mutable {
+            if (std::get_if<QXmppStanza::Error>(&result)) {
+                qWarning() << "Cannot request slot";
+            }
+            else {
+                const auto slot = std::get<QXmppHttpUploadSlotIq>(result);
+
+                if (slot.putUrl().isValid() && slot.getUrl().isValid())
+                {
+                    QUrl url(slot.getUrl());
+
+                    if( file_->getIvAndKey().size() > 0 )
+                    {
+                        url.setScheme("aesgcm");
+                        url.setFragment(file_->getIvAndKey());
+                    }
+
+                    getUrl_ = url.toString(); 
+                    QString attachmentFileName = System::getAttachmentPath() + QDir::separator() +  CryptoHelper::getHashOfString(getUrl_, true);
+
+                    if(! file_->rename(attachmentFileName))
+                    {
+                        qWarning() << "failed to rename file to " << attachmentFileName;
+                        emit fileUploadFailedForJidToUrl();
+                    }
+                    else
+                    {
+                        httpUpload_->upload(slot.putUrl().toString(), file_);
+                    }
+                }
+            }        
+        });
+    }
 }
 
 void HttpFileUploadManager::successReceived(QString )

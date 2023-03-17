@@ -18,15 +18,13 @@
 #include "ConnectionHandler.h"
 #include "CryptoHelper.h"
 
-#include "ConnectionHandler.h"
-#if 0
-#include "ChatMarkers.h"
 #include "HttpFileUploadManager.h"
-#include "MucManager.h"
+#include "ConnectionHandler.h"
 #include "DiscoInfoHandler.h"
-#include "StanzaId.h"
-#include "Settings.h"
+#if 0
+#include "MucManager.h"
 #endif
+#include "Settings.h"
 
 #include "MessageHandler.h"
 #include "MamManager.h"
@@ -44,20 +42,10 @@
 #include "QXmppCarbonManager.h"
 #include "QXmppClient.h"
 #include "QXmppPubSubItem.h"
+#include "QXmppUploadRequestManager.h"
+#include "QXmppMessageReceiptManager.h"
 
 #include "System.h"
-
-template<typename T, typename Handler>
-void await(const QFuture<T> &future, QObject *context, Handler handler)
-{
-    auto *watcher = new QFutureWatcher<T>(context);
-    QObject::connect(watcher, &QFutureWatcherBase::finished,
-                     context, [watcher, handler = std::move(handler)]() mutable {
-                         handler(watcher->result());
-                         watcher->deleteLater();
-                     });
-    watcher->setFuture(future);
-}
 
 Shmong::Shmong(QObject *parent) : QObject(parent),
     client_(new QXmppClient(this)),
@@ -66,11 +54,11 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     settings_(new Settings(this)),
 //    stanzaId_(new StanzaId(this)),
     connectionHandler_(new ConnectionHandler(this)),
-//    httpFileUploadManager_(new HttpFileUploadManager(this)),
+    httpFileUploadManager_(new HttpFileUploadManager(this)),
     messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, this)),
     mamManager_(new MamManager(persistence_, this)),
 //    mucManager_(new MucManager(this)),
-//    discoInfoHandler_(new DiscoInfoHandler(httpFileUploadManager_, mamManager_, this)),
+    discoInfoHandler_(new DiscoInfoHandler(this)),
     jid_(""), password_(""),
     version_("0.1.0"),
     notSentMsgId_(""),
@@ -78,19 +66,18 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
 {
     qApp->setApplicationVersion(version_);
 
-   connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
-//   connect(connectionHandler_, SIGNAL(signalInitialConnectionEstablished()), this, SLOT(intialSetupOnFirstConnection()));
-#if 0
+    connect(connectionHandler_, &ConnectionHandler::signalInitialConnectionEstablished, this, &Shmong::intialSetupOnFirstConnection);
     connect(httpFileUploadManager_, SIGNAL(fileUploadedForJidToUrl(QString,QString,QString)),
             this, SLOT(fileUploaded(QString,QString,QString)));
     connect(httpFileUploadManager_, SIGNAL(fileUploadFailedForJidToUrl()), 
             this, SLOT(attachmentUploadFailed()));
-
+#if 0
     connect(mucManager_, SIGNAL(newGroupForContactsList(QString,QString)), rosterController_, SLOT(addGroupAsContact(QString,QString)));
     connect(mucManager_, SIGNAL(removeGroupFromContactsList(QString)), rosterController_, SLOT(removeGroupFromContacts(QString)) );
-
-    connect(discoInfoHandler_, SIGNAL(serverHasHttpUpload_(bool)), this, SIGNAL(signalCanSendFile(bool)));
+#endif
+    connect(httpFileUploadManager_, SIGNAL(serverHasHttpUpload_(bool)), this, SIGNAL(signalCanSendFile(bool)));
     connect(discoInfoHandler_, SIGNAL(serverHasMam_(bool)), mamManager_, SLOT(setServerHasFeatureMam(bool)));
+#if 0
     connect(mucManager_, SIGNAL(newGroupForContactsList(QString,QString)), mamManager_, SLOT(receiveRoomWithName(QString, QString)));
 #endif
 
@@ -109,18 +96,14 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     // show errors to user
     connect(mucManager_, SIGNAL(signalShowMessage(QString,QString)), this, SIGNAL(signalShowMessage(QString,QString)));
     connect(rosterController_, SIGNAL(signalShowMessage(QString,QString)), this, SIGNAL(signalShowMessage(QString,QString)));
-
+#endif
     // show status to user
     connect(httpFileUploadManager_, SIGNAL(showStatus(QString, QString)), this, SIGNAL(signalShowStatus(QString, QString)));
-#endif
 
     connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(slotAboutToQuit()));
-#if 0
     connect(settings_, SIGNAL(compressImagesChanged(bool)), httpFileUploadManager_, SLOT(setCompressImages(bool)));
     connect(settings_, SIGNAL(limitCompressionChanged(unsigned int)), httpFileUploadManager_, SLOT(setLimitCompression(unsigned int)));
-
     connect(messageHandler_, SIGNAL(httpDownloadFinished(QString)), this, SIGNAL(httpDownloadFinished(QString)));
-#endif
 }
 
 Shmong::~Shmong()
@@ -162,6 +145,10 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
 
     connectionHandler_->setupWithClient(client_);
     messageHandler_->setupWithClient(client_);
+    discoInfoHandler_->setupWithClient(client_);
+    httpFileUploadManager_->setupWithClient(client_);
+    rosterController_->setupWithClient(client_);
+    mamManager_->setupWithClient(client_);
 
     client_->logger()->setLoggingType(QXmppLogger::StdoutLogging);
 
@@ -171,8 +158,9 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     // Carbon copies
     carbonManager_ = new QXmppCarbonManager;
     client_->addExtension(carbonManager_);
+    carbonManager_->setCarbonsEnabled(true);
 
-    // omemo
+    // Omemo
     if (settings_->getSoftwareFeatureOmemoEnabled() == true)
     {
         // Need to add a persistent storage
@@ -190,6 +178,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
         omemoManager_->setNewDeviceAutoSessionBuildingEnabled(true);
         omemoManager_->setAcceptedSessionBuildingTrustLevels(ANY_TRUST_LEVEL);
 
+        qDebug() << "load Omemo data" << endl;
         auto future = omemoManager_->load();
         await(future, this, [=](bool isLoaded) {
             if(isLoaded == false) {
@@ -214,8 +203,8 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
         password_ = pass;
     }
 
-//    httpFileUploadManager_->setCompressImages(settings_->getCompressImages());
-//    httpFileUploadManager_->setLimitCompression(settings_->getLimitCompression());
+    httpFileUploadManager_->setCompressImages(settings_->getCompressImages());
+    httpFileUploadManager_->setLimitCompression(settings_->getLimitCompression());
 }
 
 void Shmong::mainDisconnect()
@@ -247,21 +236,12 @@ void Shmong::omemoResetAll()
 void Shmong::intialSetupOnFirstConnection()
 {
     qDebug() << "First connection" << endl;
-
-    rosterController_->setupWithClient(client_);
-    mamManager_->setupWithClient(client_);
-
-    carbonManager_->setCarbonsEnabled(true);
-    if(omemoLoaded_ == false)
+    if(omemoLoaded_ == false && settings_->getSoftwareFeatureOmemoEnabled() == true)
         omemoManager_->setUp();
 
+    discoInfoHandler_->requestInfo();
+
 #if 0
-    // pass the client pointer to the httpFileUploadManager
-    httpFileUploadManager_->setupWithClient(client_);
-
-    // init and setup discoInfoHandler
-    discoInfoHandler_->setupWithClient(client_);
-
     // init and setup mucManager
     mucManager_->setupWithClient(client_);
 #endif
@@ -307,17 +287,14 @@ void Shmong::sendMessage(QString const &message, QString const &type)
 
 void Shmong::sendFile(QString const &toJid, QString const &file)
 {
-#if 0
-    bool shouldEncryptFile = settings_->getSoftwareFeatureOmemoEnabled() && lurchAdapter_->isOmemoUser(toJid) && (! settings_->getSendPlainText().contains(toJid));
-    Swift::JID receiverJid(toJid.toStdString());
-    Swift::IDGenerator idGenerator;
-    notSentMsgId_ = QString::fromStdString(idGenerator.generateID());
+    bool shouldEncryptFile = settings_->getSoftwareFeatureOmemoEnabled() && (! settings_->getSendPlainText().contains(toJid));
+    QString notSentMsgId_ = QXmppUtils::generateStanzaUuid();
 
     // messsage is added to the database 
     persistence_->addMessage( notSentMsgId_,
-                          QString::fromStdString(receiverJid.toBare().toString()),
-                          QString::fromStdString(receiverJid.getResource()),
-                          file, QMimeDatabase().mimeTypeForFile(file).name(), 0, shouldEncryptFile ? 1 : 0);
+                              QXmppUtils::jidToBareJid(toJid),
+                              QXmppUtils::jidToResource(toJid),
+                              file, QMimeDatabase().mimeTypeForFile(file).name(), 0, shouldEncryptFile ? 1 : 0);
 
     persistence_->markMessageAsUploadingAttachment(notSentMsgId_);
 
@@ -327,7 +304,6 @@ void Shmong::sendFile(QString const &toJid, QString const &file)
     {
         persistence_->markMessageAsSendFailed(notSentMsgId_);
     }
-#endif
 }
 
 void Shmong::sendFile(QUrl const &file)
@@ -341,14 +317,12 @@ void Shmong::sendFile(QUrl const &file)
 
 void Shmong::sendReadNotification(bool active)
 {
-#if 0
     QString currentChatPartner = persistence_->getCurrentChatPartner();
 
     if (active == true && (! currentChatPartner.isEmpty()))
     {
         messageHandler_->sendDisplayedForJid(currentChatPartner);
     }
-#endif
 }
 
 RosterController* Shmong::getRosterController()
@@ -373,11 +347,7 @@ bool Shmong::connectionState() const
 
 bool Shmong::canSendFile()
 {
-#if 0
     return httpFileUploadManager_->getServerHasFeatureHttpUpload();
-#else
-    return false;
-#endif
 }
 
 bool Shmong::isOmemoUser(const QString& jid)
@@ -401,7 +371,6 @@ QString Shmong::getAttachmentPath()
 
 QString Shmong::getLocalFileForUrl(const QString& str)
 {
-#if 0
     QUrl url(str);
 
     if(url.isRelative())
@@ -418,16 +387,11 @@ QString Shmong::getLocalFileForUrl(const QString& str)
         else
             return "";
     }
-#else
-    return "";
-#endif
 }
 
 void Shmong::downloadFile(const QString& str, const QString& msgId)
 {
-#if 0
     messageHandler_->downloadFile(str, msgId);
-#endif
 }
 
 void Shmong::setHasInetConnection(bool connected)
@@ -477,27 +441,19 @@ void Shmong::attachmentUploadFailed()
 
 void Shmong::saveAttachment(const QString& msg)
 {
-#if 0
     //TODO Error management + Destination selection
     QFile::copy(getLocalFileForUrl(msg), QStandardPaths::locate(QStandardPaths::DownloadLocation, "", QStandardPaths::LocateDirectory)  +
                     QDir::separator() + CryptoHelper::getHashOfString(QUrl(msg).toString(), true));
-#endif
 }
 
 void Shmong::fileUploaded(QString const&toJid, QString const&message, QString const&type)
 {
-#if 0
     persistence_->removeMessage(notSentMsgId_, toJid);
     notSentMsgId_ = "";
     sendMessage(toJid, message, type);
-#endif
 }
 
 unsigned int Shmong::getMaxUploadSize()
 {
-#if 0
     return httpFileUploadManager_->getMaxFileSize();
-#else
-    return 0;
-#endif
 }

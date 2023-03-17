@@ -12,6 +12,8 @@ contains(DEFINES, DBUS) {
 
 INCLUDEPATH += /usr/include/qxmpp
 INCLUDEPATH += /usr/include/qxmpp/omemo
+INCLUDEPATH += /usr/include/qxmpp/base
+INCLUDEPATH += /usr/include/qxmpp/client
 
 INCLUDEPATH += source
 INCLUDEPATH += source/persistence
@@ -19,7 +21,6 @@ INCLUDEPATH += source/xep/httpFileUpload
 INCLUDEPATH += source/xep/mam
 INCLUDEPATH += source/xep/xmppPing
 INCLUDEPATH += source/xep/chatMarkers
-#INCLUDEPATH += source/xep/stanzaId
 #INCLUDEPATH += source/room
 INCLUDEPATH += source/networkconnection
 INCLUDEPATH += source/contacts
@@ -65,32 +66,23 @@ contains(DEFINES, DBUS) {
 SOURCES += \
     source/base/Settings.cpp \
     source/base/MessageHandler.cpp \
-#    source/base/DiscoInfoHandler.cpp \
-#    source/base/FileModel.cpp \
-#    source/base/XmlWriter.cpp \
+    source/base/DiscoInfoHandler.cpp \
     source/base/Shmong.cpp \
     source/base/System.cpp \
-#    source/base/XmlProcessor.cpp \
     source/persistence/Database.cpp \
     source/persistence/MessageController.cpp \
     source/persistence/SessionController.cpp \
     source/persistence/GcmController.cpp \
     source/persistence/Persistence.cpp \
     source/persistence/OmemoController.cpp \
-#    source/xep/httpFileUpload/XmlHttpUploadContentHandler.cpp \
-#    source/xep/httpFileUpload/HttpFileuploader.cpp \
-#    source/xep/httpFileUpload/HttpFileUploadManager.cpp \
+    source/xep/httpFileUpload/HttpFileuploader.cpp \
+    source/xep/httpFileUpload/HttpFileUploadManager.cpp \
     source/xep/httpFileUpload/DownloadManager.cpp \
     source/xep/httpFileUpload/ImageProcessing.cpp \
     source/xep/httpFileUpload/FileWithCypher.cpp \
     source/xep/mam/MamManager.cpp \
     source/xep/xmppPing/XmppPingController.cpp \
     source/xep/chatMarkers/ChatMarkers.cpp \
-#    source/xep/stanzaId/StanzaId.cpp \
-#    source/xep/stanzaId/StanzaIdPayload.cpp \
-#    source/xep/stanzaId/StanzaIdPayloadParser.cpp \
-#    source/xep/stanzaId/StanzaIdPayloadParserFactory.cpp \
-#    source/xep/stanzaId/StanzaIdPayloadSerializer.cpp \
 #    source/room/MucManager.cpp \
 #    source/room/MucCollection.cpp \
     source/networkconnection/ConnectionHandler.cpp \
@@ -105,20 +97,16 @@ SOURCES += \
 HEADERS += source/base/Shmong.h \
     source/base/Settings.h \
     source/base/MessageHandler.h \
-#    source/base/DiscoInfoHandler.h \
-#    source/base/FileModel.h \
-#    source/base/XmlWriter.h \
+    source/base/DiscoInfoHandler.h \
     source/base/System.h \
-#    source/base/XmlProcessor.h \
     source/persistence/Database.h \
     source/persistence/MessageController.h \
     source/persistence/SessionController.h \
     source/persistence/GcmController.h \
     source/persistence/Persistence.h \
     source/persistence/OmemoController.h \
-#    source/xep/httpFileUpload/XmlHttpUploadContentHandler.h \
-#    source/xep/httpFileUpload/HttpFileuploader.h \
-#    source/xep/httpFileUpload/HttpFileUploadManager.h \
+    source/xep/httpFileUpload/HttpFileuploader.h \
+    source/xep/httpFileUpload/HttpFileUploadManager.h \
     source/xep/httpFileUpload/DownloadManager.h \
     source/xep/httpFileUpload/ImageProcessing.h \
     source/xep/httpFileUpload/FileWithCypher.h \
@@ -127,11 +115,6 @@ HEADERS += source/base/Shmong.h \
     source/xep/xmppPing/PingRequest.h \
     source/xep/xmppPing/XmppPingController.h \
     source/xep/chatMarkers/ChatMarkers.h \
-#    source/xep/stanzaId/StanzaId.h \
-#    source/xep/stanzaId/StanzaIdPayload.h \
-#    source/xep/stanzaId/StanzaIdPayloadParser.h \
-#    source/xep/stanzaId/StanzaIdPayloadParserFactory.h \
-#    source/xep/stanzaId/StanzaIdPayloadSerializer.h \
 #    source/room/MucManager.h \
 #    source/room/MucCollection.h \
     source/networkconnection/ConnectionHandler.h \

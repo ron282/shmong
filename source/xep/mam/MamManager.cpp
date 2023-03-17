@@ -72,10 +72,10 @@ void MamManager::addJidforArchiveQuery(QString jid)
 
 void MamManager::setServerHasFeatureMam(bool hasFeature)
 {
-    //qDebug() << "MamManager::setServerHasFeatureMam: " << hasFeature;
+    qDebug() << "MamManager::setServerHasFeatureMam: " << hasFeature;
     serverHasFeature_ = hasFeature;
 
-    requestArchiveForJid(client_->configuration().jidBare());
+    //requestArchiveForJid(client_->configuration().jidBare());
 }
 
 
@@ -86,7 +86,7 @@ void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from)
         QDateTime start = QDateTime::currentDateTimeUtc().addDays(-14);
 
 
-        //qDebug() << "MamManager::requestArchiveForJid: " << jid << ", last: " << last;
+        qDebug() << "MamManager::requestArchiveForJid: " << jid;
 
         if(from.isNull() == false)
         {

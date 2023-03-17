@@ -3,29 +3,24 @@
 
 #include <QObject>
 
+#include "QXmppClientExtension.h"
+#include "QXmppMessageHandler.h"
+
 class Persistence;
 class RosterController;
-class QXmppClient;
-class QXmppMessage;
 
-class ChatMarkers : public QObject
+class ChatMarkers : public QXmppClientExtension, public QXmppMessageHandler
 {
     Q_OBJECT
 public:
-    ChatMarkers(Persistence* persistence, RosterController* rosterController, QObject *parent = 0);
-    void setupWithClient(QXmppClient *qXmppClient);
+    ChatMarkers(Persistence* persistence, RosterController* rosterController);
 
-    void sendDisplayedForJidAndMessageId(QString jid, QString messageId);
+    QStringList discoveryFeatures() const override;
+    bool handleMessage(const QXmppMessage &) override;
     void sendDisplayedForJid(const QString &jid);
-
-signals:
-
-public slots:
-    void handleMessageReceived(const QXmppMessage& message);
 
 private:
 
-    QXmppClient* qXmppClient_;
     Persistence* persistence_;
     RosterController* rosterController_;
 };
