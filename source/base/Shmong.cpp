@@ -288,7 +288,7 @@ void Shmong::sendMessage(QString const &message, QString const &type)
 void Shmong::sendFile(QString const &toJid, QString const &file)
 {
     bool shouldEncryptFile = settings_->getSoftwareFeatureOmemoEnabled() && (! settings_->getSendPlainText().contains(toJid));
-    QString notSentMsgId_ = QXmppUtils::generateStanzaUuid();
+    notSentMsgId_ = QXmppUtils::generateStanzaUuid();
 
     // messsage is added to the database 
     persistence_->addMessage( notSentMsgId_,
