@@ -69,16 +69,6 @@ Page {
                     shmong.settings.EnableSoftwareFeatureOmemo = softwareFeatureOmemoSwitch.checked;
                 }
             }
-
-            Button{
-                id: connectButton
-                x: Theme.paddingLarge
-                text: qsTr("ResetAll")
-
-                onClicked: {
-                        shmong.omemoResetAll();
-                }  
-            }
         }
     }
 }
