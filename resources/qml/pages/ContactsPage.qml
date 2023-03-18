@@ -31,6 +31,19 @@ Page {
             id: item;
             menu: contextMenu
             contentHeight: Theme.itemSizeMedium;
+
+            function removeContact() {
+                remorseAction(qsTr("Remove contact"), function()
+                {
+                    if (shmong.rosterController.isGroup(jid)) {
+                        shmong.removeRoom(jid)
+                    }
+                    else {
+                        shmong.rosterController.removeContact(jid)
+                    }
+                }) 
+            }
+
             onClicked: {
                 shmong.setCurrentChatPartner(jid);
                 pageStack.push (pageMessaging, { "conversationId" : jid });
@@ -96,18 +109,7 @@ Page {
                     ContextMenu {
                         MenuItem {
                             text:  qsTr("Remove");
-                            onClicked: {
-                                remorseAction(qsTr("Remove contact"),
-                                function() {
-                                    if (shmong.rosterController.isGroup(jid)) {
-                                        shmong.removeRoom(jid)
-                                    }
-                                    else {
-                                        shmong.rosterController.removeContact(jid)
-                                    }
-                                })  
-                                
-                            }
+                            onClicked: removeContact()
                         }
                     }
                 }
