@@ -39,7 +39,7 @@
 #include "QXmppOmemoManager.h"
 #include "QXmppOmemoMemoryStorage.h"
 #include "QXmppPubSubManager.h"
-#include "QXmppCarbonManager.h"
+#include "QXmppCarbonManagerV2.h"
 #include "QXmppClient.h"
 #include "QXmppPubSubItem.h"
 #include "QXmppUploadRequestManager.h"
@@ -156,9 +156,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     client_->addExtension(pubsubManager_);
 
     // Carbon copies
-    carbonManager_ = new QXmppCarbonManager;
-    client_->addExtension(carbonManager_);
-    carbonManager_->setCarbonsEnabled(true);
+    client_->addNewExtension<QXmppCarbonManagerV2>();
 
     // Omemo
     if (settings_->getSoftwareFeatureOmemoEnabled() == true)
@@ -170,9 +168,6 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
         
         omemoManager_ = new QXmppOmemoManager(persistence_->getOmemoController());
         client_->addExtension(omemoManager_);
-
-        connect(carbonManager_, &QXmppCarbonManager::messageSent, omemoManager_, &QXmppOmemoManager::handleMessage);        
-        connect(carbonManager_, &QXmppCarbonManager::messageReceived, omemoManager_, &QXmppOmemoManager::handleMessage);        
 
         omemoManager_->setSecurityPolicy(QXmpp::TrustSecurityPolicy::NoSecurityPolicy);
         omemoManager_->setNewDeviceAutoSessionBuildingEnabled(true);

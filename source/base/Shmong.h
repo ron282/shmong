@@ -18,7 +18,6 @@ class QXmppTrustMemoryStorage;
 class QXmppTrustManager;
 class QXmppOmemoStorage;
 class QXmppOmemoManager;
-class QXmppCarbonManager;
 class QXmppClient;
 class QXmppAtmTrustMemoryStorage;
 class QXmppAtmManager;
@@ -142,7 +141,6 @@ public:
     QXmppTrustMemoryStorage *trustStorage_;
     QXmppTrustManager* trustManager_; 
     QXmppOmemoManager* omemoManager_;     
-    QXmppCarbonManager *carbonManager_;
 
     HttpFileUploadManager* httpFileUploadManager_;
 #if 0
