@@ -33,6 +33,7 @@ signals:
 public slots:
     void slotAppGetsActive(bool active);
     void setAskBeforeDownloading(bool AskBeforeDownloading);
+    void handleMessageReceived(const QXmppMessage &message);
 
 private:
 #ifdef DBUS
@@ -48,6 +49,4 @@ public:
 
     bool appIsActive_;
     bool askBeforeDownloading_;
-
-    void handleMessageReceived(const QXmppMessage &message);
 };

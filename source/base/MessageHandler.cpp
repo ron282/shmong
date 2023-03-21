@@ -11,6 +11,7 @@
 #include "QXmppE2eeMetadata.h"
 #include "QXmppMessage.h"
 #include "QXmppUtils.h"
+#include "QXmppTask.h"
 
 
 #include <QUrl>
@@ -48,6 +49,12 @@ void MessageHandler::setupWithClient(QXmppClient* client)
 
 void MessageHandler::handleMessageReceived(const QXmppMessage &message)
 {
+    qDebug() << "MessageHandler::handleMessageReceived";
+    qDebug() << "Message from:" << message.from();
+    qDebug() << "Message to:" << message.to();
+    qDebug() << "Message encryptionMethod:" << message.encryptionMethod();
+    qDebug() << "Message body:" << message.body();
+
     unsigned int security = 0;
     if(message.encryptionMethod() != QXmpp::NoEncryption)
     {
@@ -178,9 +185,9 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
     emit messageSent(msg.stanzaId());
 
     if(security) {
-        client_->send(std::move(msg), sendParams);
+        client_->sendSensitive(std::move(msg), sendParams);
     } else {
-        client_->sendUnencrypted(std::move(msg), sendParams);
+        client_->send(std::move(msg), sendParams);
     }
 }
 

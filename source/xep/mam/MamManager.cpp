@@ -38,7 +38,7 @@ void MamManager::setupWithClient(QXmppClient* client)
 
         connect(client_, &QXmppClient::connected, this, &MamManager::handleConnected);
         connect(qXmppMamManager_, &QXmppMamManager::resultsRecieved, this, &MamManager::resultsReceived);
-        connect(qXmppMamManager_, &QXmppMamManager::archivedMessageReceived, this, &MamManager::archivedMessageReceived);
+        connect(qXmppMamManager_, &QXmppMamManager::archivedMessageReceived, this, &MamManager::handleArchivedMessageReceived);
     }
 }
 
@@ -75,9 +75,8 @@ void MamManager::setServerHasFeatureMam(bool hasFeature)
     qDebug() << "MamManager::setServerHasFeatureMam: " << hasFeature;
     serverHasFeature_ = hasFeature;
 
-    //requestArchiveForJid(client_->configuration().jidBare());
+    requestArchiveForJid(client_->configuration().jidBare());
 }
-
 
 void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from)
 {
@@ -106,8 +105,16 @@ void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from)
 // this fails sometimes :-(.
 // use custom payload parser to filter out mam messages!
 
-void MamManager::archivedMessageReceived(const QString &queryId, const QXmppMessage &message)
+void MamManager::handleArchivedMessageReceived(const QString &queryId, const QXmppMessage &message)
 {
+    qDebug() << "MamManager::archivedMessageReceived";
+    qDebug() << "Message from:" << message.from();
+    qDebug() << "Message to:" << message.to();
+    qDebug() << "Message encryptionMethod:" << message.encryptionMethod();
+    qDebug() << "Message body:" << message.body();
+
+    emit mamMessageReceived(message);
+    /*
     unsigned int security = 0;
     if(message.encryptionMethod() == QXmppMessage::OMEMO)
     {
@@ -182,4 +189,5 @@ void MamManager::archivedMessageReceived(const QString &queryId, const QXmppMess
                                      message.body(), type, 0, security);
         }
     }
+    */
 }

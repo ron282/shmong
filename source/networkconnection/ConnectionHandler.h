@@ -49,6 +49,6 @@ private:
 
     QXmppClient* client_{nullptr};
     ReConnectionHandler *reConnectionHandler_;
-    IpHeartBeatWatcher *ipHeartBeatWatcher_;
+ //   IpHeartBeatWatcher *ipHeartBeatWatcher_;
     //XmppPingController *xmppPingController_;
 };

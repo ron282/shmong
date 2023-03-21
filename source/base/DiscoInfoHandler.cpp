@@ -30,20 +30,16 @@ void DiscoInfoHandler::setupWithClient(QXmppClient* client)
 
 void DiscoInfoHandler::discoInfoReceived(const QXmppDiscoveryIq &info)
 {
-    qDebug() << "discoInfoReceived" << endl;
-/*
     auto features = info.features();
 
-    if(features.contains("urn:xmpp:mam:2")
+    if(features.contains("urn:xmpp:mam:2"))
     {
         emit serverHasMam_(true);
     }
-*/
 }
 
 void DiscoInfoHandler::discoItemsReceived(const QXmppDiscoveryIq &items)
 {
-    qDebug() << "discoItemsReceived" << endl;
     auto list = items.items();
 
     for(int i=0; i<list.size(); i++)
@@ -54,6 +50,5 @@ void DiscoInfoHandler::discoItemsReceived(const QXmppDiscoveryIq &items)
 
 void DiscoInfoHandler::requestInfo()
 {
-    qDebug() << "Request Disco" << endl;
     discoveryManager_->requestItems(QXmppUtils::jidToDomain(client_->configuration().jid()));
 }

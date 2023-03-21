@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QNetworkReply>
 
-class QNetworkAccessManager;
+
 class QNetworkRequest;
 class QFile;
 

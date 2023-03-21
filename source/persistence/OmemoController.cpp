@@ -1,28 +1,15 @@
+#include "Shmong.h"
 #include "OmemoController.h"
+#include "QXmppTask.h"
+#include "QXmppPromise.h"
 
 #include <QSqlRecord>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QDateTime>
 
-#include <QFutureWatcher>
-
 #include <QDebug>
 
-template<typename T>
-QFuture<T> makeReadyFuture(T &&value)
-{
-    QFutureInterface<T> interface(QFutureInterfaceBase::Started);
-    interface.reportResult(std::move(value));
-    interface.reportFinished();
-    return interface.future();
-}
-
-inline QFuture<void> makeReadyFuture()
-{
-    using State = QFutureInterfaceBase::State;
-    return QFutureInterface<void>(State(State::Started | State::Finished)).future();
-}
 
 ///
 /// Constructs an OMEMO memory storage.
@@ -76,7 +63,7 @@ OmemoController::~OmemoController()
 }
 
 /// \cond
-QFuture<QXmppOmemoStorage::OmemoData> OmemoController::allData()
+QXmppTask<QXmppOmemoStorage::OmemoData> OmemoController::allData()
 {
     qDebug() << "OmemoController read allData" << endl;
 
@@ -130,10 +117,10 @@ QFuture<QXmppOmemoStorage::OmemoData> OmemoController::allData()
         d.devices[r.value(Database::sqlJid_).toString()][r.value(Database::sqlDeviceId_).toUInt()] = std::move(dev);       
     }
 
-    return makeReadyFuture(std::move(d));
+    return makeReadyTask(std::move(d));
 }
 
-QFuture<void> OmemoController::setOwnDevice(const std::optional<OwnDevice> &device)
+QXmppTask<void> OmemoController::setOwnDevice(const std::optional<OwnDevice> &device)
 {
     QSqlRecord r = identityTable_->record(0);
     bool hasNoRecord = r.isNull(Database::sqlOwnDeviceId_);
@@ -183,11 +170,10 @@ QFuture<void> OmemoController::setOwnDevice(const std::optional<OwnDevice> &devi
         identityTable_->clear();
     }        
 
-
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::addSignedPreKeyPair(const uint32_t keyId, const SignedPreKeyPair &keyPair)
+QXmppTask<void> OmemoController::addSignedPreKeyPair(const uint32_t keyId, const SignedPreKeyPair &keyPair)
 {
     qDebug() << "OmemoController::addSignedPreKeyPair(keyId=" << QString::number(keyId) << ")" << endl;
 
@@ -219,10 +205,10 @@ QFuture<void> OmemoController::addSignedPreKeyPair(const uint32_t keyId, const S
         }
     }
 
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::removeSignedPreKeyPair(const uint32_t keyId)
+QXmppTask<void> OmemoController::removeSignedPreKeyPair(const uint32_t keyId)
 {
     // First parse the list of messages with attachments
     QSqlQuery query(*(database_->getPointer()));
@@ -245,10 +231,10 @@ QFuture<void> OmemoController::removeSignedPreKeyPair(const uint32_t keyId)
         }
     }
 
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::addPreKeyPairs(const QHash<uint32_t, QByteArray> &keyPairs)
+QXmppTask<void> OmemoController::addPreKeyPairs(const QHash<uint32_t, QByteArray> &keyPairs)
 {
     qDebug() << "OmemoController::addPreKeyPairs()" << endl;
 
@@ -281,10 +267,10 @@ QFuture<void> OmemoController::addPreKeyPairs(const QHash<uint32_t, QByteArray> 
         it++;        
     }
 
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::removePreKeyPair(const uint32_t keyId)
+QXmppTask<void> OmemoController::removePreKeyPair(const uint32_t keyId)
 {
     // First parse the list of messages with attachments
 
@@ -308,10 +294,10 @@ QFuture<void> OmemoController::removePreKeyPair(const uint32_t keyId)
         }
     }
 
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::addDevice(const QString &jid, const uint32_t deviceId, const QXmppOmemoStorage::Device &device)
+QXmppTask<void> OmemoController::addDevice(const QString &jid, const uint32_t deviceId, const QXmppOmemoStorage::Device &device)
 {
     QSqlQuery query(*(database_->getPointer()));
     
@@ -349,10 +335,10 @@ QFuture<void> OmemoController::addDevice(const QString &jid, const uint32_t devi
             qDebug() << "error on select in OmemoController::addDevice";
         }
     }
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::removeDevice(const QString &jid, const uint32_t deviceId)
+QXmppTask<void> OmemoController::removeDevice(const QString &jid, const uint32_t deviceId)
 {
     // First parse the list of messages with attachments
 
@@ -377,10 +363,10 @@ QFuture<void> OmemoController::removeDevice(const QString &jid, const uint32_t d
         }
     }
 
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::removeDevices(const QString &jid)
+QXmppTask<void> OmemoController::removeDevices(const QString &jid)
 {
     // First parse the list of messages with attachments
 
@@ -404,10 +390,10 @@ QFuture<void> OmemoController::removeDevices(const QString &jid)
         }
     }
 
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
-QFuture<void> OmemoController::resetAll()
+QXmppTask<void> OmemoController::resetAll()
 {
     QSqlQuery query(*(database_->getPointer()));
 
@@ -472,7 +458,7 @@ QFuture<void> OmemoController::resetAll()
     }
  
     // NOt sure persistent data has to be cleared
-    return makeReadyFuture();
+    return makeReadyTask();
 }
 
 void OmemoController::printSqlError(QSqlTableModel *table)

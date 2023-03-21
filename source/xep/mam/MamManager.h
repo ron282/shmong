@@ -27,12 +27,15 @@ public:
 
     static const QString mamNs;
 
+    Q_SIGNALS:
+    void mamMessageReceived(const QXmppMessage &message);
+
 #ifndef UNIT_TEST
 private:
 #endif
     void requestArchiveForJid(const QString& jid, const QDateTime &from = QDateTime());
     void resultsReceived(const QString &queryId, const QXmppResultSetReply &resultSetReply, bool complete);
-    void archivedMessageReceived(const QString &queryId, const QXmppMessage &message);
+    void handleArchivedMessageReceived(const QString &queryId, const QXmppMessage &message);
 
     bool serverHasFeature_;
     QStringList queridJids_;

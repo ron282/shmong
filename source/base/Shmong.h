@@ -3,6 +3,8 @@
 #include "XmppClient.h"
 #include "Settings.h"
 #include "QXmppTrustLevel.h"
+#include "QXmppPromise.h"
+
 
 #include <QObject>
 #include <QStringList>
@@ -30,24 +32,27 @@ class DiscoInfoHandler;
 class MessageHandler;
 class MamManager;
 
+template<typename T>
+QXmppTask<T> makeReadyTask(T &&value)
+{
+    QXmppPromise<T> promise;
+    promise.finish(std::move(value));
+    return promise.task();
+}
+
+inline QXmppTask<void> makeReadyTask()
+{
+    QXmppPromise<void> promise;
+    promise.finish();
+    return promise.task();
+}
+
 constexpr auto ANY_TRUST_LEVEL = QXmpp::TrustLevel::Undecided |
             QXmpp::TrustLevel::AutomaticallyDistrusted | 
             QXmpp::TrustLevel::ManuallyDistrusted |
             QXmpp::TrustLevel::AutomaticallyTrusted |
             QXmpp::TrustLevel::ManuallyTrusted |
             QXmpp::TrustLevel::Authenticated;
-
-template<typename T, typename Handler>
-void await(const QFuture<T> &future, QObject *context, Handler handler)
-{
-    auto *watcher = new QFutureWatcher<T>(context);
-    QObject::connect(watcher, &QFutureWatcherBase::finished,
-                     context, [watcher, handler = std::move(handler)]() mutable {
-                     handler(watcher->result());
-                         watcher->deleteLater();
-                     });
-    watcher->setFuture(future);
-}
 
 class Shmong : public QObject
 {

@@ -19,8 +19,9 @@
 #include <QDebug>
 
 #include "QXmppClient.h"
-#include "QXmppHttpUploadIq.h"
+#include "QXmppHttpUploadIq.h"  
 #include "QXmppUploadRequestManager.h"
+#include "QXmppTask.h"
 
 
 HttpFileUploadManager::HttpFileUploadManager(QObject *parent) : QObject(parent),
@@ -49,8 +50,6 @@ void HttpFileUploadManager::setupWithClient(QXmppClient* client)
 
 void HttpFileUploadManager::handleServiceFoundChanged()
 {
-    qDebug() << "upload service found" << endl;
-    
     auto uploadServices = uploadRequestManager_->uploadServices();
 
     if(uploadServices.size() > 0)
@@ -166,8 +165,8 @@ void HttpFileUploadManager::requestHttpUploadSlot()
         }
 
         auto future = uploadRequestManager->requestSlot(basename, file_->size(), QMimeDatabase().mimeTypeForFile(*file_), uploadServerJid_);
-        await(future, this, [=](QXmppUploadRequestManager::SlotResult result) mutable {
-            if (std::get_if<QXmppStanza::Error>(&result)) {
+        future.then(this, [=](QXmppUploadRequestManager::SlotResult result) mutable {
+            if (const auto error = std::get_if<QXmppError>(&result)) {
                 qWarning() << "Cannot request slot";
             }
             else {
@@ -248,8 +247,6 @@ QString HttpFileUploadManager::createTargetFileName(QString source, QString suff
          targetFileName = fileInfo.completeBaseName() + "." + suffix; 
 
     QString targetPath = System::getAttachmentPath() + QDir::separator() + QString::number(unixTime) + targetFileName;
-
-    qDebug() << "target file: " << targetPath;
 
     return targetPath;
 }
