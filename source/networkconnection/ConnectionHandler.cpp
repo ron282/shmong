@@ -11,31 +11,31 @@
 
 ConnectionHandler::ConnectionHandler(QObject *parent) : QObject(parent),
     connected_(false), initialConnectionSuccessfull_(false), hasInetConnection_(false), appIsActive_(false),
-    reConnectionHandler_(new ReConnectionHandler(30000, this)),
-    ipHeartBeatWatcher_(new IpHeartBeatWatcher(this))
-    //xmppPingController_(new XmppPingController())
+    reConnectionHandler_(new ReConnectionHandler(30000, this))
+//  ,ipHeartBeatWatcher_(new IpHeartBeatWatcher(this))
+//  xmppPingController_(new XmppPingController())
 {
     connect(reConnectionHandler_, SIGNAL(canTryToReconnect()), this, SLOT(tryReconnect()));
 
 #ifndef SFOS
-    connect(ipHeartBeatWatcher_, SIGNAL(triggered()), this, SLOT(tryStablishServerConnection()));
-    connect(ipHeartBeatWatcher_, SIGNAL(finished()), ipHeartBeatWatcher_, SLOT(deleteLater()));
+//    connect(ipHeartBeatWatcher_, SIGNAL(triggered()), this, SLOT(tryStablishServerConnection()));
+//    connect(ipHeartBeatWatcher_, SIGNAL(finished()), ipHeartBeatWatcher_, SLOT(deleteLater()));
 #else
-//    QTimer *timer = new QTimer(this);
-//    connect(timer, SIGNAL(timeout()), this, SLOT(tryStablishServerConnection()));
-//    timer->start(60000 * 20); // 20 minutes
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(tryStablishServerConnection()));
+    timer->start(60000 * 20); // 20 minutes
 #endif
 
-    ipHeartBeatWatcher_->start();
+//    ipHeartBeatWatcher_->start();
 }
 
 ConnectionHandler::~ConnectionHandler()
 {
     //delete xmppPingController_;
 
-    ipHeartBeatWatcher_->stopWatching();
+//    ipHeartBeatWatcher_->stopWatching();
 #ifdef SFOS
-    ipHeartBeatWatcher_->terminate();
+//    ipHeartBeatWatcher_->terminate();
 #endif
 }
 
@@ -69,7 +69,7 @@ void ConnectionHandler::handleStateChanged(QXmppClient::State state)
 
 //    client_->getPresenceSender()->sendPresence(Swift::Presence::create("Send me a message"));
 
-    // message carbons request must be made each time a connection is established
+    // message carbons request must be made each time a connection is established. To be checked with QXMPP
     enableMessageCarbons();
 }
 
@@ -116,13 +116,11 @@ void ConnectionHandler::tryReconnect()
 
     if (initialConnectionSuccessfull_ == true && hasInetConnection_ == true)
     {
-#if 0  //Check if this is still needed
         // try to disconnect the old session from before network disturbtion
-        client_->disconnect();
+        client_->disconnectFromServer();
 
         // try new connect
-        client_->connect();
-#endif
+        client_->connectToServer(client_->configuration().jid(), client_->configuration().password());
     }
 }
 

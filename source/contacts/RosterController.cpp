@@ -2,6 +2,7 @@
 #include "System.h"
 
 #include "QXmppPresence.h"
+#include "QXmppTask.h"
 
 #include <QQmlContext>
 #include <QImage>
@@ -221,6 +222,8 @@ void RosterController::handlePresenceReceived(const QXmppPresence &presence)
 
 void RosterController::handlePresenceChanged(const QString &bareJid, const QString& resource)
 {
+    qDebug() << "RosterController::handlePresenceChanged";
+
     if(qXmppRosterManager_ != nullptr)
     {
         QXmppPresence presence = qXmppRosterManager_->getPresence(bareJid, resource);
@@ -301,6 +304,8 @@ void RosterController::handleRosterReceived()
 {
     bool changed = false;
 
+    qDebug() << "RosterController::handleRosterReceived";
+
     const QStringList jids = qXmppRosterManager_->getRosterBareJids();
     for (const QString &bareJid : jids) {
 
@@ -327,7 +332,7 @@ void RosterController::handleRosterReceived()
 
 void RosterController::handleVCardChanged(const QXmppVCardIq &vCard)
 {
-    //qDebug() << "vCard received";
+    qDebug() << "vCard received";
 
     const QString bareJid = vCard.from();
     const QString newHash = QCryptographicHash::hash(vCard.photo(), QCryptographicHash::Md5);

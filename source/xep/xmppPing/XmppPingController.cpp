@@ -18,10 +18,8 @@ void XmppPingController::doPing()
 {
     if (client_ != NULL)
     {
-//        PingRequest::ref pingRequest = PingRequest::create(Swift::JID(client_->getJID().getDomain()),
-//                                                           client_->getIQRouter());
-//        pingRequest->onResponse.connect(boost::bind(&XmppPingController::handlePingResponse, this, _1));
-//        pingRequest->send();
+//      QXmppPingRequest pingRequest;
+//      client_->sendId(pingRequest);
     }
 }
 

@@ -173,9 +173,11 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
         omemoManager_->setNewDeviceAutoSessionBuildingEnabled(true);
         omemoManager_->setAcceptedSessionBuildingTrustLevels(ANY_TRUST_LEVEL);
 
+        connect(mamManager_, &MamManager::mamMessageReceived, omemoManager_, &QXmppOmemoManager::handleMessage);
+
         qDebug() << "load Omemo data" << endl;
         auto future = omemoManager_->load();
-        await(future, this, [=](bool isLoaded) {
+        future.then(this, [=](bool isLoaded) {
             if(isLoaded == false) {
                 qDebug() << "Error loading Omemo data" << endl; 
             }
@@ -230,7 +232,6 @@ void Shmong::omemoResetAll()
 
 void Shmong::intialSetupOnFirstConnection()
 {
-    qDebug() << "First connection" << endl;
     if(omemoLoaded_ == false && settings_->getSoftwareFeatureOmemoEnabled() == true)
         omemoManager_->setUp();
 
