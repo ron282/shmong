@@ -15,16 +15,16 @@ Install regular Sailfish SDK: sfdk
 
 Set a common target output directory in your dev directory::
 
-* mkdir ~/dev/RPMS
-* sfdk config --global output-prefix=/home/user1/dev/RPMS
+ mkdir ~/dev/RPMS
+ sfdk config --global output-prefix=/home/user1/dev/RPMS
 
 List installed SDKs::
 
-* sfdk tools list
+ sfdk tools list
 
 Select a SDK::
 
-* sfdk config --global target=SailfishOS-4.4.0.58-armv7hl
+ sfdk config --global target=SailfishOS-4.4.0.58-armv7hl
 
 -------------------------------------------------------------------------------
 Install build dependencies on SFOS
@@ -32,25 +32,26 @@ Install build dependencies on SFOS
 
 Build qca::
 
-* cd ~/dev
-* git clone htpp://github.com/ron282/qca
-* cd qca
-* sfdk build
+ cd ~/dev
+ git clone htpp://github.com/ron282/qca
+ cd qca
+ sfdk build
+ cd ..
 
 Build libomemo-c::
 
-* cd ~/dev
-* git clone http://github.com/ron282/libomemo-c
-* cd libomemo-c
-* sfdk build
+ git clone http://github.com/ron282/libomemo-c
+ cd libomemo-c
+ sfdk build
+ cd ..
 
 Build Qxmpp::
 
-* cd ~/dev
-* git clone https://github.com/ron282/qxmpp
-* cd qxmpp
-* git checkout qxmpp-project-1.5
-* sfdk build
+ git clone https://github.com/ron282/qxmpp
+ cd qxmpp
+ git checkout qxmpp-project-1.5
+ sfdk build
+ cd ..
 
 -------------------------------------------------------------------------------
 Build ShmoNG
@@ -58,10 +59,10 @@ Build ShmoNG
 
 on SFOS::
 
-* cd ~/dev
-* git clone https://github.com/ron282/shmong 
-* cd shmong
-* sfdk build 
+ git clone https://github.com/ron282/shmong 
+ cd shmong
+ sfdk build 
+ cd ..
 
 -------------------------------------------------------------------------------
 Installing on host
@@ -69,19 +70,19 @@ Installing on host
 
 Install a device from QtCreator 
 
-Check device is installed
+Check device is installed::
 
-* sfdk device list
+ sfdk device list
 
-Configuration device
+Configure device::
 
-* sfdk config device="Xperia10"
+ sfdk config device="Xperia10"
 
-Deploy packages to device
+Deploy packages to the device::
 
-* cd libomemo-c
-* sfdk deploy --sdk
-* cd ../qxmpp
-* sfdk deploy --sdk
-* cd ../shmong
-* sfdk deploy --sdk
+ cd libomemo-c
+ sfdk deploy --sdk
+ cd ../qxmpp
+ sfdk deploy --sdk
+ cd ../shmong
+ sfdk deploy --sdk
