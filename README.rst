@@ -22,12 +22,6 @@ Set a common target output directory in your dev directory::
 List installed SDKs::
 
 * sfdk tools list
-SailfishOS-4.4.0.58                          sdk-provided,latest
-├── SailfishOS-4.4.0.58-aarch64              sdk-provided,latest
-│   └── SailfishOS-4.4.0.58-aarch64.default  snapshot
-├── SailfishOS-4.4.0.58-armv7hl              sdk-provided,latest
-│   └── SailfishOS-4.4.0.58-armv7hl.default  snapshot
-└── SailfishOS-4.4.0.58-i486                 sdk-provided,latest
 
 Select a SDK::
 
