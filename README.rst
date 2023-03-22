@@ -39,11 +39,7 @@ Install build dependencies on SFOS
 
 From your dev directory::
 
-* cd ~/dev
-
-Build Qca::
-
-* git clone http://github.com/ron282/qca
+* git clone htpp://github.com/ron282/qca
 * cd qca
 * sfdk build
 
