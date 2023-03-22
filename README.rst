@@ -10,9 +10,8 @@ Very early alpha stage.
 Install SFOS development tools and SDK
 -------------------------------------------------------------------------------
 
-Install regular Sailfish SDK: sfdk::
-
-* See https://docs.sailfishos.org/Tools/Sailfish_SDK/Installation/
+Install regular Sailfish SDK: sfdk 
+(see https://docs.sailfishos.org/Tools/Sailfish_SDK/Installation/)
 
 Set a common target output directory in your dev directory::
 
@@ -31,22 +30,26 @@ Select a SDK::
 Install build dependencies on SFOS
 -------------------------------------------------------------------------------
 
-From your dev directory::
+Build qca::
 
+* cd ~/dev
 * git clone htpp://github.com/ron282/qca
 * cd qca
 * sfdk build
 
 Build libomemo-c::
 
-* git clone http://github.com/geobra/libomemo-c
+* cd ~/dev
+* git clone http://github.com/ron282/libomemo-c
 * cd libomemo-c
 * sfdk build
 
 Build Qxmpp::
 
-* git clone https://github.com/ron282/qxmpp-sfos qxmpp-project-1.5
+* cd ~/dev
+* git clone https://github.com/ron282/qxmpp
 * cd qxmpp
+* git checkout qxmpp-project-1.5
 * sfdk build
 
 -------------------------------------------------------------------------------
@@ -55,6 +58,7 @@ Build ShmoNG
 
 on SFOS::
 
+* cd ~/dev
 * git clone https://github.com/ron282/shmong 
 * cd shmong
 * sfdk build 
@@ -65,15 +69,15 @@ Installing on host
 
 Install a device from QtCreator 
 
-Check device is installed::
+Check device is installed
 
 * sfdk device list
 
-Configuration device::
+Configuration device
 
 * sfdk config device="Xperia10"
 
-Deploy packages to device::
+Deploy packages to device
 
 * cd libomemo-c
 * sfdk deploy --sdk
@@ -81,6 +85,3 @@ Deploy packages to device::
 * sfdk deploy --sdk
 * cd ../shmong
 * sfdk deploy --sdk
-
-
-
