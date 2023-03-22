@@ -65,22 +65,20 @@ Installing on host
 
 Install a device from QtCreator 
 
-Check device is installed
-* sfdk device list
-#0 "Xperia10"
-    hardware-device  user-defined  defaultuser@192.168.2.16:22
-    private-key:
+Check device is installed::
 
-Configuration device
+* sfdk device list
+
+Configuration device::
+
 * sfdk config device="Xperia10"
 
-Deploy packages to device
+Deploy packages to device::
+
 * cd libomemo-c
 * sfdk deploy --sdk
-
 * cd ../qxmpp
 * sfdk deploy --sdk
-
 * cd ../shmong
 * sfdk deploy --sdk
 
