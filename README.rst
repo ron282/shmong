@@ -10,9 +10,8 @@ Very early alpha stage.
 Install SFOS development tools and SDK
 -------------------------------------------------------------------------------
 
-Install regular Sailfish SDK: sfdk::
-
-* See https://docs.sailfishos.org/Tools/Sailfish_SDK/Installation/
+Install regular Sailfish SDK: sfdk 
+(see https://docs.sailfishos.org/Tools/Sailfish_SDK/Installation/)
 
 Set a common target output directory in your dev directory::
 
@@ -22,12 +21,6 @@ Set a common target output directory in your dev directory::
 List installed SDKs::
 
 * sfdk tools list
-SailfishOS-4.4.0.58                          sdk-provided,latest
-├── SailfishOS-4.4.0.58-aarch64              sdk-provided,latest
-│   └── SailfishOS-4.4.0.58-aarch64.default  snapshot
-├── SailfishOS-4.4.0.58-armv7hl              sdk-provided,latest
-│   └── SailfishOS-4.4.0.58-armv7hl.default  snapshot
-└── SailfishOS-4.4.0.58-i486                 sdk-provided,latest
 
 Select a SDK::
 
@@ -37,26 +30,26 @@ Select a SDK::
 Install build dependencies on SFOS
 -------------------------------------------------------------------------------
 
-From your dev directory::
+Build qca::
 
 * cd ~/dev
-
-Build Qca::
-
-* git clone http://github.com/ron282/qca
+* git clone htpp://github.com/ron282/qca
 * cd qca
 * sfdk build
 
 Build libomemo-c::
 
-* git clone http://github.com/geobra/libomemo-c
+* cd ~/dev
+* git clone http://github.com/ron282/libomemo-c
 * cd libomemo-c
 * sfdk build
 
 Build Qxmpp::
 
-* git clone https://github.com/ron282/qxmpp-sfos qxmpp-project-1.5
+* cd ~/dev
+* git clone https://github.com/ron282/qxmpp
 * cd qxmpp
+* git checkout qxmpp-project-1.5
 * sfdk build
 
 -------------------------------------------------------------------------------
@@ -65,6 +58,7 @@ Build ShmoNG
 
 on SFOS::
 
+* cd ~/dev
 * git clone https://github.com/ron282/shmong 
 * cd shmong
 * sfdk build 
@@ -76,21 +70,19 @@ Installing on host
 Install a device from QtCreator 
 
 Check device is installed
+
 * sfdk device list
-#0 "Xperia10"
-    hardware-device  user-defined  defaultuser@192.168.2.16:22
-    private-key:
 
 Configuration device
+
 * sfdk config device="Xperia10"
 
 Deploy packages to device
+
 * cd libomemo-c
 * sfdk deploy --sdk
-
 * cd ../qxmpp
 * sfdk deploy --sdk
-
 * cd ../shmong
 * sfdk deploy --sdk
 
