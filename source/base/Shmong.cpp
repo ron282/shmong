@@ -149,6 +149,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     httpFileUploadManager_->setupWithClient(client_);
     rosterController_->setupWithClient(client_);
     mamManager_->setupWithClient(client_);
+    connect(mamManager_, &MamManager::mamMessageReceived, messageHandler_, &MessageHandler::handleMessageReceived);
 
     client_->logger()->setLoggingType(QXmppLogger::StdoutLogging);
 
@@ -173,9 +174,6 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
         omemoManager_->setNewDeviceAutoSessionBuildingEnabled(true);
         omemoManager_->setAcceptedSessionBuildingTrustLevels(ANY_TRUST_LEVEL);
 
-        connect(mamManager_, &MamManager::mamMessageReceived, omemoManager_, &QXmppOmemoManager::handleMessage);
-
-        qDebug() << "load Omemo data" << endl;
         auto future = omemoManager_->load();
         future.then(this, [=](bool isLoaded) {
             if(isLoaded == false) {
@@ -232,8 +230,9 @@ void Shmong::omemoResetAll()
 
 void Shmong::intialSetupOnFirstConnection()
 {
-    if(omemoLoaded_ == false && settings_->getSoftwareFeatureOmemoEnabled() == true)
+    if(omemoLoaded_ == false && settings_->getSoftwareFeatureOmemoEnabled() == true) {
         omemoManager_->setUp();
+    }
 
     discoInfoHandler_->requestInfo();
 

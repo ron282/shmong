@@ -8,9 +8,6 @@
 #include "QXmppResultSet.h"
 
 class Persistence;
-#if 0
-class DownloadManager;
-#endif
 class QXmppClient;
 class QXmppMamManager;
 
@@ -25,8 +22,6 @@ public:
     explicit MamManager(Persistence* persistence, QObject *parent = nullptr);
     void setupWithClient(QXmppClient* client);
 
-    static const QString mamNs;
-
     Q_SIGNALS:
     void mamMessageReceived(const QXmppMessage &message);
 
@@ -34,16 +29,11 @@ public:
 private:
 #endif
     void requestArchiveForJid(const QString& jid, const QDateTime &from = QDateTime());
-    void resultsReceived(const QString &queryId, const QXmppResultSetReply &resultSetReply, bool complete);
-    void handleArchivedMessageReceived(const QString &queryId, const QXmppMessage &message);
 
     bool serverHasFeature_;
     QStringList queridJids_;
 
     Persistence* persistence_;
-#if 0
-    DownloadManager* downloadManager_;
-#endif
     QXmppClient* client_;
     QXmppMamManager *qXmppMamManager_;
 

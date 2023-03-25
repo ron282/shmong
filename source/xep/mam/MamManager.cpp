@@ -8,6 +8,7 @@
 #include "QXmppMamManager.h"
 #include "QXmppUtils.h"
 #include "QXmppMamManager.h"
+#include "QXmppTask.h"
 
 #include <QDateTime>
 #include <QUrl>
@@ -16,13 +17,8 @@
 #include <QMimeDatabase>
 
 
-const QString MamManager::mamNs = "urn:xmpp:mam:2";
-
 MamManager::MamManager(Persistence *persistence, QObject *parent) : QObject(parent),
     serverHasFeature_(false), queridJids_(), persistence_(persistence),
-#if 0
-    downloadManager_(new DownloadManager(this)), 
-#endif
     client_(nullptr)
 {
 }
@@ -37,8 +33,6 @@ void MamManager::setupWithClient(QXmppClient* client)
         client_->addExtension(qXmppMamManager_);
 
         connect(client_, &QXmppClient::connected, this, &MamManager::handleConnected);
-        connect(qXmppMamManager_, &QXmppMamManager::resultsRecieved, this, &MamManager::resultsReceived);
-        connect(qXmppMamManager_, &QXmppMamManager::archivedMessageReceived, this, &MamManager::handleArchivedMessageReceived);
     }
 }
 
@@ -46,11 +40,6 @@ void MamManager::handleConnected()
 {
     // reset on each new connect
     queridJids_.clear();
-}
-
-void MamManager::resultsReceived(const QString &/*queryId*/, const QXmppResultSetReply &/*resultSetReply*/, bool /*complete*/)
-{
-    /// This slot is called when all results for a request have been received
 }
 
 void MamManager::receiveRoomWithName(QString jid, QString name)
@@ -72,7 +61,7 @@ void MamManager::addJidforArchiveQuery(QString jid)
 
 void MamManager::setServerHasFeatureMam(bool hasFeature)
 {
-    qDebug() << "MamManager::setServerHasFeatureMam: " << hasFeature;
+    // qDebug() << "MamManager::setServerHasFeatureMam: " << hasFeature;
     serverHasFeature_ = hasFeature;
 
     requestArchiveForJid(client_->configuration().jidBare());
@@ -84,110 +73,29 @@ void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from)
     {
         QDateTime start = QDateTime::currentDateTimeUtc().addDays(-14);
 
-
-        qDebug() << "MamManager::requestArchiveForJid: " << jid;
-
         if(from.isNull() == false)
         {
             start = from;
         }
 
-        qXmppMamManager_->retrieveArchivedMessages("", // to 
-                                                   "", // node
-                                                   jid,  
-                                                   start, 
-                                                   QDateTime::currentDateTimeUtc());
-    }
-}
+        qDebug() << "MamManager::requestArchiveForJid: " << jid;
+        auto future = qXmppMamManager_->retrieveMessages(QString(), QString(), jid, start, QDateTime::currentDateTimeUtc());
 
-
-// FIXME rewrite me!
-// this fails sometimes :-(.
-// use custom payload parser to filter out mam messages!
-
-void MamManager::handleArchivedMessageReceived(const QString &queryId, const QXmppMessage &message)
-{
-    qDebug() << "MamManager::archivedMessageReceived";
-    qDebug() << "Message from:" << message.from();
-    qDebug() << "Message to:" << message.to();
-    qDebug() << "Message encryptionMethod:" << message.encryptionMethod();
-    qDebug() << "Message body:" << message.body();
-
-    emit mamMessageReceived(message);
-    /*
-    unsigned int security = 0;
-    if(message.encryptionMethod() == QXmppMessage::OMEMO)
-    {
-        security = 1;
-    }
-
-    // XEP 280
-    bool sentCarbon = false;
-
-    // If this is a carbon message, we need to retrieve the actual content
-    if (message.isCarbonForwarded() == true)
-    {
-        if(client_->configuration().jidBare().compare(QXmppUtils::jidToBareJid(message.from()), Qt::CaseInsensitive) == 0)
-        {
-            sentCarbon = true;
-        }
-    }
-
-    if (! message.body().isEmpty())
-    {
-        QUrl oobUrl(message.outOfBandUrl());
-        bool isLink = false;
-
-        QString type = "txt";
-        QString messageId = message.id();
-
-        if (! message.outOfBandUrl().isEmpty())  // it's an url
-        {
-            isLink = true;
-            //isLink = security == 1 ? theBody.startsWith("aesgcm://") : isLink;
-
-            if(isLink)
-            {
-                type = QMimeDatabase().mimeTypeForFile(oobUrl.fileName()).name();
-
-#if 0
-                if(! askBeforeDownloading_)
-                    downloadManager_->doDownload(oobUrl, messageId); // keep the fragment in the sent message
-#endif
+        future.then(this, [this](QXmppMamManager::RetrieveResult result) {
+            auto error = std::get_if<QXmppError>(&result);
+            if (error) {
+                qWarning() << "Cannot retrieve Mam messages";
             }
-        }
+            else {
+                const auto &retrievedMessages = std::get<QXmppMamManager::RetrievedMessages>(result);
+                QVectorIterator<QXmppMessage> it(retrievedMessages.messages);
+                
+                qDebug() << "Mam messages received: " << retrievedMessages.messages.size();
 
-        bool isGroupMessage = false;
-        if (message.type() == QXmppMessage::GroupChat)
-        {
-            isGroupMessage = true;
-        }
-
-        if (messageId.isEmpty() == true)
-        {
-            // No message id, try xep 0359
-            messageId = message.stanzaId();
-
-            // still empty?
-            if (messageId.isEmpty() == true)
-            {
-                messageId = QString::number(QDateTime::currentMSecsSinceEpoch());
-            }
-        }
-
-        if (!sentCarbon)
-        {
-            persistence_->addMessage(messageId,
-                                     QXmppUtils::jidToBareJid(message.from()),
-                                     QXmppUtils::jidToResource(message.from()),
-                                     message.body(), type, 1, security);
-        } else
-        {
-            persistence_->addMessage(messageId,
-                                     QXmppUtils::jidToBareJid(message.to()),
-                                     QXmppUtils::jidToResource(message.to()),
-                                     message.body(), type, 0, security);
-        }
+                while(it.hasNext()) {
+                    emit mamMessageReceived(it.next());
+                }
+            } 
+        });
     }
-    */
 }
