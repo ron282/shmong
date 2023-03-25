@@ -41,7 +41,9 @@ contains(DEFINES, SFOS) {
 }
 
 QMAKE_CXXFLAGS += -std=c++17
-LIBS += -lgcrypt -lomemo-c -lqxmpp -lQXmppOmemo -lqca-qt5
+LIBS += -lgcrypt -lqxmpp -lQXmppOmemo
+
+CONFIG += qxmpp
 
 DEFINES += BOOST_SIGNALS_NO_DEPRECATION_WARNING
 
