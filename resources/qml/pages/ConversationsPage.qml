@@ -94,19 +94,6 @@ Page {
                 }
 
                 Row {
-                    Rectangle {
-                        width: 45
-                        height: 45
-                        color: "#999900"
-                        radius: width*0.5
-                        visible: (unreadmessages > 0) ? true : false
-                        Label {
-                            text: unreadmessages
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-
                     Label {
                         id: nameId;
                         wrapMode: Text.NoWrap
