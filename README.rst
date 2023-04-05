@@ -138,3 +138,4 @@ Deploy packages to device::
  sfdk deploy --sdk  "-*-devel"
  cd ../shmong
  sfdk deploy --sdk  "-*-devel"
+
