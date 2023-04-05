@@ -120,7 +120,7 @@ Build Shmong::
  cd ..
 
 Testing on a device
-Check device is installed (intall it from QtCreator)::
+Check device is installed (install it from QtCreator)::
 
  sfdk device list
 
@@ -131,21 +131,10 @@ Configuration device::
 Deploy packages to device::
 
  cd libomemo-c
- sfdk deploy --sdk
+ sfdk deploy --sdk  "-*-devel"
  cd ../qca
- sfdk deploy --sdk
+ sfdk deploy --sdk  "-*-devel"
  cd ../qxmpp
- sfdk deploy --sdk
+ sfdk deploy --sdk  "-*-devel"
  cd ../shmong
- sfdk deploy --sdk
-
-Deploy packages to the device::
-
- cd libomemo-c
- sfdk deploy --sdk "-*-devel"
- cd ../qca
- sfdk deploy --sdk "-*-devel"
- cd ../qxmpp
- sfdk deploy --sdk "-*-devel"
- cd ../shmong
- sfdk deploy --sdk "-*-devel"
+ sfdk deploy --sdk  "-*-devel"
