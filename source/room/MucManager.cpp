@@ -1,86 +1,64 @@
 #include "MucManager.h"
 
+#include "QXmppClient.h"
+#include "QXmppBookmarkManager.h"
+#include "QXmppBookmarkSet.h"
+#include "QXmppMucManager.h"
+
 #include <QDateTime>
 #include <QDebug>
 #include <iostream>
 
 
 MucManager::MucManager(QObject *parent) :
-    QObject(parent), client_(nullptr), mucBookmarkManager_(nullptr), triggerNewMucSignal_(true)
+    QObject(parent), client_(nullptr), triggerNewMucSignal_(true)
 {
 }
 
 MucManager::~MucManager()
 {
-    mucCollection_.clear();
-    delete mucBookmarkManager_;
 }
 
-void MucManager::setupWithClient(Swift::Client* client)
+void MucManager::setupWithClient(QXmppClient* client)
 {
     if (client != nullptr)
     {
         client_ = client;
+        
+        manager_ =  new QXmppMucManager();
+        client_->addExtension(manager_);
 
-        mucBookmarkManager_ = new Swift::MUCBookmarkManager(client_->getIQRouter());
-        mucBookmarkManager_->onBookmarksReady.connect(boost::bind(&MucManager::handleBookmarksReady, this));
-        mucBookmarkManager_->onBookmarkAdded.connect(boost::bind(&MucManager::handleBookmarkAdded, this, _1));
-        mucBookmarkManager_->onBookmarkRemoved.connect(boost::bind(&MucManager::handleBookmarkRemoved, this, _1));
+        bookmarkManager_ = new QXmppBookmarkManager();
+        client_->addExtension(bookmarkManager_);
 
-        client_->onMessageReceived.connect(boost::bind(&MucManager::handleMessageReceived, this, _1));
-
-        client_->onConnected.connect(boost::bind(&MucManager::handleConnected, this));
+        connect(manager_, &QXmppMucManager::invitationReceived, this, &MucManager::handleInvitationReceived);
+        connect(bookmarkManager_, &QXmppBookmarkManager::bookmarksReceived, this, &MucManager::handleBookmarksReceived);
     }
 }
 
-void MucManager::handleConnected()
+void MucManager::handleInvitationReceived(const QString &roomJid, const QString &inviter, const QString &reason)
 {
-    std::cout << "##################### MucManager::handleConnected() -> rejoin rooms ######################" << std::endl;
-
-    // This is only needed on a reconnt after an network loss.
-    // It will rejoin to the rooms from the bookmarks.
-    // It does nothing on a first connection.
-
-    triggerNewMucSignal_ = false;
-    handleBookmarksReady();
-    triggerNewMucSignal_ = true;
+    this->addRoom(roomJid, reason);
 }
 
-void MucManager::handleMessageReceived(Swift::Message::ref message)
+void MucManager::handleBookmarksReceived(const QXmppBookmarkSet &bookmarks)
 {
-    // Examples/MUCListAndJoin/MUCListAndJoin.cpp
-    if (message->getPayload<Swift::MUCInvitationPayload>())
+    qDebug() << "##################### handleBookmarksReceived ######################";
+
+    auto conferences = bookmarks.conferences();
+
+    for(int i=0; i<conferences.size(); i++)
     {
-        //qDebug() << "its a muc inventation!!!";
-        Swift::MUCInvitationPayload::ref mucInventation = message->getPayload<Swift::MUCInvitationPayload>();
+        qDebug() << "rooms: jid:" << conferences[i].jid() << ", name:" <<  conferences[i].name();
 
-        Swift::JID roomJid = mucInventation->getJID();
-        QString roomName = QString::fromStdString(message->getSubject());
-
-        this->addRoom(roomJid, roomName);
-    }
-}
-
-void MucManager::handleBookmarksReady()
-{
-    std::cout << "##################### handleBookmarksReady ######################" << std::endl;
-    std::vector<Swift::MUCBookmark> bookmarks = mucBookmarkManager_->getBookmarks();
-
-    for(std::vector<Swift::MUCBookmark>::iterator it = bookmarks.begin(); it != bookmarks.end(); ++it)
-    {
-        Swift::JID roomJid((*it).getRoom());
-        std::cout << "rooms: jid:" << roomJid << ", name: " << (*it).getName() << std::endl;
-
-        if (roomJid.isValid())
+        if (triggerNewMucSignal_ == true)
         {
-            if (triggerNewMucSignal_ == true)
-            {
-                emit newGroupForContactsList( QString::fromStdString(roomJid.toBare().toString()) , QString::fromStdString((*it).getName()));
-            }
-
-            // maybee join room
-            joinRoomIfConfigured(*it);
+            qDebug() << "Signal new room. jid: " << conferences[i].jid() << ", name:" << conferences[i].name() << endl; 
+            emit newGroupForContactsList( conferences[i].jid(), conferences[i].name());
         }
+
+        // maybee join room
+        joinRoomIfConfigured(conferences[i]);
     }
 }
 
@@ -89,13 +67,11 @@ bool MucManager::isRoomAlreadyBookmarked(const QString& roomJid)
     qDebug() << "isRoomAlreadyBookmarked?: " << roomJid;
     bool returnValue = false;
 
-    std::vector<Swift::MUCBookmark> bookmarks = mucBookmarkManager_->getBookmarks();
+    auto conferences = bookmarkManager_->bookmarks().conferences();
 
-    for(std::vector<Swift::MUCBookmark>::iterator it = bookmarks.begin(); it != bookmarks.end(); ++it)
+    for(int i=0; i<conferences.size(); i++)
     {
-        Swift::JID roomJidBm((*it).getRoom());
-
-        if (roomJid.compare(QString::fromStdString(roomJidBm.toBare().toString()), Qt::CaseInsensitive) == 0)
+        if (roomJid.compare(conferences[i].jid(), Qt::CaseInsensitive) == 0)
         {
             returnValue = true;
             break;
@@ -103,147 +79,96 @@ bool MucManager::isRoomAlreadyBookmarked(const QString& roomJid)
     }
 
     qDebug() << "... " << returnValue;
-
     return returnValue;
 }
 
-void MucManager::handleBookmarkAdded(Swift::MUCBookmark bookmark)
-{
-    Swift::JID roomJid(bookmark.getRoom());
-    //std::cout << "###################### handleBookmarkAdded: ############### " << roomJid.toBare().toString() << ", name: " << bookmark.getName() << std::endl;
-
-    // update contacts list
-    if (roomJid.isValid())
-    {
-        emit newGroupForContactsList( QString::fromStdString(roomJid.toBare().toString()) , QString::fromStdString(bookmark.getName()));
-
-        // maybee join room
-        joinRoomIfConfigured(bookmark);
-    }
-}
-
-void MucManager::joinRoomIfConfigured(Swift::MUCBookmark const &bookmark)
+void MucManager::joinRoomIfConfigured(const QXmppBookmarkConference &bookmark)
 {
     // join room if autoJoin
-    if (bookmark.getAutojoin())
+    if (bookmark.autoJoin())
     {
-        Swift::MUC::ref muc = client_->getMUCManager()->createMUC(bookmark.getRoom());
+        QXmppMucRoom *room = manager_->addRoom(bookmark.name());
+        QString nickName = bookmark.nickName();
 
-        std::string nick = "";
-        boost::optional<std::string> optionalNick = bookmark.getNick();
-        if (optionalNick)
-        {
-            nick = *optionalNick;
-        }
+        if(nickName.isEmpty())
+            room->setNickName(getNickName());
         else
-        {
-            nick = getNickName().toStdString();
-        }
+            room->setNickName(nickName);
 
-        muc->joinAs(nick);
+        room->join();
     }
 }
 
 QString MucManager::getNickName()
 {
     // FIXME get name from settings page
-    QString nick = QString::fromStdString(client_->getJID().toBare().toString());
+    QString nick = client_->configuration().jidBare();
     nick.replace("@", "(at)");
-    //QString nick = QString::fromStdString(client_->getJID().getNode());
 
     return nick;
 }
 
-void MucManager::handleBookmarkRemoved(Swift::MUCBookmark bookmark)
+
+void MucManager::addRoom(QString const &roomJid, QString const &roomName)
 {
-    std::cout << "handleBookmarkRemoved: " << bookmark.getRoom().toString() << std::endl;
+    QString nickName = getNickName();
 
-    // leave room
-    sendUnavailableToRoom(bookmark);
-
-    // update roster
-    emit removeGroupFromContactsList( QString::fromStdString(bookmark.getRoom().toBare().toString()) );
-}
-
-void MucManager::addRoom(Swift::JID &roomJid, QString const &roomName)
-{
-    std::string nickName = getNickName().toStdString();
-
-    // create MUC
-    std::shared_ptr<Swift::MUC> muc = client_->getMUCManager()->createMUC(roomJid);
-    muc->onJoinComplete.connect(boost::bind(&MucManager::handleJoinComplete, this, _1));
-    muc->onJoinFailed.connect(boost::bind(&MucManager::handleJoinFailed, this, _1));
+    QXmppMucRoom *room = manager_->addRoom(roomJid);
+    room->setNickName(nickName);
+    room->join();
 
     // save as bookmark if not already in
-    if (isRoomAlreadyBookmarked(QString::fromStdString(roomJid)) == false)
+    if (isRoomAlreadyBookmarked(roomJid) == false)
     {
-        // create bookmark
-        std::shared_ptr<Swift::MUCBookmark> mucBookmark(new Swift::MUCBookmark(roomJid, roomName.toStdString()));
-        mucBookmark->setNick(nickName);
-        mucBookmark->setAutojoin(true);
+        auto bookmarks = bookmarkManager_->bookmarks();
+        QXmppBookmarkConference bookmark;
 
-        // save MucCollection
-        std::shared_ptr<MucCollection> mucCollection(new MucCollection(muc, mucBookmark, nickName));
-        mucCollection_.push_back(mucCollection);
-    }
+        bookmark.setAutoJoin(true);
+        bookmark.setNickName(nickName);
+        bookmark.setName(roomName);
+        bookmark.setJid(roomJid);
 
-    // try to join. onJoinComplete, add to bookmark
-    muc->joinAs(nickName);
-}
-
-void MucManager::handleJoinComplete(const std::string &joinedName)
-{
-    std::cout << "join complete: " << joinedName;
-
-    for(std::vector<std::shared_ptr<MucCollection>>::iterator it = mucCollection_.begin(); it != mucCollection_.end(); ++it)
-    {
-        if ((*it)->getNickname().compare(joinedName) == 0)
-        {
-            std::shared_ptr<Swift::MUCBookmark> bookmark = (*it)->getBookmark();
-            if (bookmark)
-            {
-                mucBookmarkManager_->addBookmark(*bookmark);
-                break;
-            }
-        }
-    }
-
-    emit roomJoinComplete(QString::fromStdString(joinedName));
-}
-
-void MucManager::handleJoinFailed(Swift::ErrorPayload::ref error)
-{
-    if (error)
-    {
-        Swift::ErrorPayload joinError = *error;
-        //std::cout << "join error: " << joinError.getText() << std::endl;
-        emit signalShowMessage("Error joining room", QString::fromStdString(joinError.getText()));
+        bookmarks.conferences().append(bookmark);
+         
+        bookmarkManager_->setBookmarks(bookmarks);     
     }
 }
 
-void MucManager::handleUserLeft(Swift::MUC::LeavingType lt)
+QXmppMucRoom *MucManager::getRoom(QString const &roomJid)
 {
-    std::cout << "##################### MucManager::handleUserLeft:" << lt << std::endl;
+    auto rooms = manager_->rooms();
+
+    for(int i=0; i<rooms.size(); i++)
+    {
+        if(rooms[i]->jid().compare(roomJid, Qt::CaseInsensitive))
+            return rooms[i];
+    }   
+
+    return nullptr;
 }
 
 void MucManager::removeRoom(QString const &roomJid)
 {
-    std::vector< Swift::MUCBookmark > bookmarks = mucBookmarkManager_->getBookmarks();
+    auto room =  getRoom(roomJid);
 
-    for(std::vector<Swift::MUCBookmark>::iterator it = bookmarks.begin(); it != bookmarks.end(); ++it)
+    if(room != nullptr)
     {
-        if ((*it).getRoom().toBare().toString().compare(roomJid.toStdString()) == 0)
+        room->leave({});
+    }
+
+    auto bookmarks = bookmarkManager_->bookmarks();
+    auto rooms = bookmarks.conferences();
+
+    for (int i = 0; i < rooms.size(); i++)
+    {
+        if(rooms[i].jid().compare(roomJid, Qt::CaseInsensitive) == 0)
         {
-            mucBookmarkManager_->removeBookmark(*it);
+            rooms.removeAt(i);
+            bookmarks.setConferences(rooms);
+            bookmarkManager_->setBookmarks(bookmarks);
             break;
         }
     }
-}
 
-void MucManager::sendUnavailableToRoom(Swift::MUCBookmark bookmark)
-{
-    Swift::Presence::ref presence = Swift::Presence::create();
-    presence->setTo(bookmark.getRoom());
-    presence->setType(Swift::Presence::Unavailable);
-    client_->sendPresence(presence);
+    emit removeGroupFromContactsList( roomJid );
 }

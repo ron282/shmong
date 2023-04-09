@@ -25,9 +25,7 @@ class QXmppAtmTrustMemoryStorage;
 class QXmppAtmManager;
 
 class HttpFileUploadManager;
-#if 0
 class MucManager;
-#endif
 class DiscoInfoHandler;
 class MessageHandler;
 class MamManager;
@@ -151,9 +149,7 @@ public:
     QXmppOmemoManager* omemoManager_;     
 
     HttpFileUploadManager* httpFileUploadManager_;
-#if 0
     MucManager *mucManager_;
-#endif
     DiscoInfoHandler* discoInfoHandler_;
     MessageHandler* messageHandler_;
     MamManager *mamManager_;

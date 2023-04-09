@@ -133,12 +133,9 @@ Page {
 
                     Image {
                         id: subscriptionImage;
-                        visible: ! shmong.rosterController.isGroup(jid)
+                        visible: false
+//                        visible: ! shmong.rosterController.isGroup(jid)
                         source: getSubscriptionImage(subscription);
-                    }
-                    Image {
-                        id: availabilityImage;
-                        source: getAvailabilityImage(availability)
                     }
                     Label {
                         id: jidId;

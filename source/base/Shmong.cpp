@@ -21,9 +21,7 @@
 #include "HttpFileUploadManager.h"
 #include "ConnectionHandler.h"
 #include "DiscoInfoHandler.h"
-#if 0
 #include "MucManager.h"
-#endif
 #include "Settings.h"
 
 #include "MessageHandler.h"
@@ -52,12 +50,11 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     rosterController_(new RosterController(this)),
     persistence_(new Persistence(this)),
     settings_(new Settings(this)),
-//    stanzaId_(new StanzaId(this)),
     connectionHandler_(new ConnectionHandler(this)),
     httpFileUploadManager_(new HttpFileUploadManager(this)),
     messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, this)),
     mamManager_(new MamManager(persistence_, this)),
-//    mucManager_(new MucManager(this)),
+    mucManager_(new MucManager(this)),
     discoInfoHandler_(new DiscoInfoHandler(this)),
     jid_(""), password_(""),
     version_("0.1.0"),
@@ -71,10 +68,10 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
             this, SLOT(fileUploaded(QString,QString,QString)));
     connect(httpFileUploadManager_, SIGNAL(fileUploadFailedForJidToUrl()), 
             this, SLOT(attachmentUploadFailed()));
-#if 0
+
     connect(mucManager_, SIGNAL(newGroupForContactsList(QString,QString)), rosterController_, SLOT(addGroupAsContact(QString,QString)));
     connect(mucManager_, SIGNAL(removeGroupFromContactsList(QString)), rosterController_, SLOT(removeGroupFromContacts(QString)) );
-#endif
+
     connect(httpFileUploadManager_, SIGNAL(serverHasHttpUpload_(bool)), this, SIGNAL(signalCanSendFile(bool)));
     connect(discoInfoHandler_, SIGNAL(serverHasMam_(bool)), mamManager_, SLOT(setServerHasFeatureMam(bool)));
 #if 0
@@ -146,6 +143,7 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     connectionHandler_->setupWithClient(client_);
     messageHandler_->setupWithClient(client_);
     discoInfoHandler_->setupWithClient(client_);
+    mucManager_->setupWithClient(client_);
     httpFileUploadManager_->setupWithClient(client_);
     rosterController_->setupWithClient(client_);
     mamManager_->setupWithClient(client_);
@@ -232,11 +230,6 @@ void Shmong::intialSetupOnFirstConnection()
     }
 
     discoInfoHandler_->requestInfo();
-
-#if 0
-    // init and setup mucManager
-    mucManager_->setupWithClient(client_);
-#endif
 
     // Save account data
     settings_->setJid(jid_);
@@ -403,26 +396,14 @@ QString Shmong::getVersion()
 
 void Shmong::joinRoom(QString const &roomJid, QString const &roomName)
 {
-#if 0
-    Swift::JID jid(roomJid.toStdString());
-
-    if (jid.isValid())
-    {
-        setCurrentChatPartner(roomJid); // this prevents notifications for each initial history message
-        mucManager_->addRoom(jid, roomName);
-    }
-    else
-    {
-        emit signalShowMessage("Join room", "JID not valid!");
-    }
-#endif
+    //TODO Check jid is valid
+    setCurrentChatPartner(roomJid); // this prevents notifications for each initial history message
+    mucManager_->addRoom(roomJid, roomName);
 }
 
 void Shmong::removeRoom(QString const &roomJid)
 {
-#if 0
     mucManager_->removeRoom(roomJid);
-#endif
 }
 
 void Shmong::attachmentUploadFailed()

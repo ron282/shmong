@@ -21,7 +21,7 @@ INCLUDEPATH += source/xep/httpFileUpload
 INCLUDEPATH += source/xep/mam
 INCLUDEPATH += source/xep/xmppPing
 INCLUDEPATH += source/xep/chatMarkers
-#INCLUDEPATH += source/room
+INCLUDEPATH += source/room
 INCLUDEPATH += source/networkconnection
 INCLUDEPATH += source/contacts
 INCLUDEPATH += source/base
@@ -85,7 +85,7 @@ SOURCES += \
     source/xep/mam/MamManager.cpp \
     source/xep/xmppPing/XmppPingController.cpp \
     source/xep/chatMarkers/ChatMarkers.cpp \
-#    source/room/MucManager.cpp \
+    source/room/MucManager.cpp \
 #    source/room/MucCollection.cpp \
     source/networkconnection/ConnectionHandler.cpp \
     source/networkconnection/IpHeartBeatWatcher.cpp \
@@ -117,7 +117,7 @@ HEADERS += source/base/Shmong.h \
     source/xep/xmppPing/PingRequest.h \
     source/xep/xmppPing/XmppPingController.h \
     source/xep/chatMarkers/ChatMarkers.h \
-#    source/room/MucManager.h \
+    source/room/MucManager.h \
 #    source/room/MucCollection.h \
     source/networkconnection/ConnectionHandler.h \
     source/networkconnection/IpHeartBeatWatcher.h \

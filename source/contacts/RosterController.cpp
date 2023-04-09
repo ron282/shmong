@@ -547,9 +547,6 @@ void RosterController::addGroupAsContact(QString groupJid, QString groupName)
 
 void RosterController::removeGroupFromContacts(QString groupJid)
 {
-    //qDebug() << "removeGroupFromContacts";
-    //dumpRosterList();
-
     bool somethingChanged = false;
     QList<RosterItem*>::iterator it = rosterList_.begin();
 
@@ -570,10 +567,8 @@ void RosterController::removeGroupFromContacts(QString groupJid)
     if (somethingChanged)
     {
         sortRosterList();
-        //emit rosterListChanged();
+        emit rosterListChanged();
     }
-
-    //qDebug() << "#####################removeGroupFromContacts: rL_.size: " << rosterList_.size();
 }
 
 bool RosterController::isGroup(QString const &jid)
