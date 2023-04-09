@@ -25,9 +25,7 @@ class QXmppAtmTrustMemoryStorage;
 class QXmppAtmManager;
 
 class HttpFileUploadManager;
-#if 0
 class MucManager;
-#endif
 class DiscoInfoHandler;
 class MessageHandler;
 class MamManager;
@@ -135,7 +133,6 @@ public:
 
     void requestHttpUploadSlot();
     void handleHttpUploadResponse(const std::string response);
-
     RosterController* getRosterController();
     Persistence* getPersistence();
     Settings* getSettings();
@@ -145,25 +142,21 @@ public:
     Persistence* persistence_;
     Settings* settings_;
     ConnectionHandler* connectionHandler_;
-    QXmppPubSubManager *pubsubManager_;
-    QXmppTrustMemoryStorage *trustStorage_;
-    QXmppTrustManager* trustManager_; 
-    QXmppOmemoManager* omemoManager_;     
-
     HttpFileUploadManager* httpFileUploadManager_;
-#if 0
-    MucManager *mucManager_;
-#endif
-    DiscoInfoHandler* discoInfoHandler_;
     MessageHandler* messageHandler_;
-    MamManager *mamManager_;
+    MamManager* mamManager_;
+    MucManager* mucManager_;
+    DiscoInfoHandler* discoInfoHandler_;
 
     QString jid_;
     QString password_;
-
     const QString version_;
     QString notSentMsgId_;
-
     bool omemoLoaded_;
+
+    QXmppPubSubManager *pubsubManager_;
+    QXmppTrustMemoryStorage *trustStorage_;
+    QXmppTrustManager* trustManager_;
+    QXmppOmemoManager* omemoManager_;
 };
 

@@ -23,10 +23,11 @@
 
 
 MessageHandler::MessageHandler(Persistence *persistence, Settings * settings, RosterController* rosterController, QObject *parent) : QObject(parent),
-    persistence_(persistence), settings_(settings), rosterController_(rosterController),
+    client_(nullptr), persistence_(persistence), rosterController_(rosterController), settings_(settings), 
     downloadManager_(new DownloadManager(this)),
     chatMarkers_(nullptr),
-    appIsActive_(true)
+    appIsActive_(true),
+    askBeforeDownloading_(false)
 {
     connect(settings_, SIGNAL(askBeforeDownloadingChanged(bool)), this, SLOT(setAskBeforeDownloading(bool)));
     connect(downloadManager_, SIGNAL(httpDownloadFinished(QString)), this, SIGNAL(httpDownloadFinished(QString)));
@@ -49,18 +50,9 @@ void MessageHandler::setupWithClient(QXmppClient* client)
 
 void MessageHandler::handleMessageReceived(const QXmppMessage &message)
 {
-    qDebug() << "MessageHandler::handleMessageReceived";
-    qDebug() << "Message from:" << message.from();
-    qDebug() << "Message to:" << message.to();
-    qDebug() << "Message encryptionMethod:" << message.encryptionMethod();
-    qDebug() << "Message body:" << message.body();
-
     unsigned int security = 0;
     if(message.encryptionMethod() != QXmpp::NoEncryption)
     {
-        qDebug() << "received encrypted message" << endl;
-        qDebug() << "decrypted message:" << message.body() << endl;
-
         security = 1;
     }
 
@@ -99,11 +91,11 @@ void MessageHandler::handleMessageReceived(const QXmppMessage &message)
                 downloadManager_->doDownload(oobUrl, messageId); // keep the fragment in the sent message
         }
 
-        bool isGroupMessage = false;
-        if (message.type() == QXmppMessage::GroupChat)
-        {
-            isGroupMessage = true;
-        }
+        //bool isGroupMessage = false;
+        //if (message.type() == QXmppMessage::GroupChat)
+        //{
+        //    isGroupMessage = true;
+        //}
 
         if (messageId.isEmpty() == true)
         {
@@ -173,6 +165,7 @@ void MessageHandler::sendMessage(QString const &toJid, QString const &message, Q
     if(isGroup == true)
     {
         msg.setType(QXmppMessage::GroupChat);
+        security = 0; // No support for encryption for groups
     }
 
     qDebug() << "sendMessage" << "to:" << msg.to() << "id:" << msg.stanzaId() << "security :" << security << " body:" << message << endl;

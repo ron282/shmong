@@ -83,8 +83,8 @@ private:
     void dumpRosterList();
 
     QXmppClient* qXmppClient_;
-    QXmppRosterManager *qXmppRosterManager_;
-    QXmppVCardManager *qXmppVCardManager_;
+    QXmppRosterManager *rosterManager_;
+    QXmppVCardManager *vCardManager_;
 
     QList<RosterItem*> rosterList_;
 };

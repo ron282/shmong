@@ -1,10 +1,14 @@
 #ifndef MUCMANAGER_H
 #define MUCMANAGER_H
 
-#include "MucCollection.h"
-
 #include <QObject>
-#include <Swiften/Swiften.h>
+
+class QXmppClient;
+class QXmppBookmarkConference;
+class QXmppBookmarkSet;
+class QXmppMucManager;
+class QXmppMucRoom;
+class QXmppBookmarkManager;
 
 class MucManager : public QObject
 {
@@ -14,11 +18,12 @@ public:
     explicit MucManager(QObject *parent = 0);
     ~MucManager();
 
-    void setupWithClient(Swift::Client* client);
-    void handleConnected();
-
-    void addRoom(Swift::JID &roomJid, QString const &roomName);
-    void removeRoom(QString const &jroomJid);
+    void setupWithClient(QXmppClient* client);
+    bool isRoomAlreadyBookmarked(const QString& roomJid);
+    void joinRoomIfConfigured(const QXmppBookmarkConference &bookmark);
+    QString getNickName();
+    void removeRoom(QString const &roomJid);
+    void addRoom(QString const &roomJid, QString const &roomName);
 
 signals:
     void newGroupForContactsList(QString groupJid, QString groupName);
@@ -26,28 +31,17 @@ signals:
     void roomJoinComplete(QString);
     void signalShowMessage(QString headline, QString body);
 
-private:
-    Swift::Client* client_;
-    Swift::MUCBookmarkManager *mucBookmarkManager_;
-    std::vector<std::shared_ptr<MucCollection>> mucCollection_;
+public slots:
+    void handleInvitationReceived(const QString &roomJid, const QString &inviter, const QString &reason);
+    void handleBookmarksReceived(const QXmppBookmarkSet &bookmarks);
 
-    void handleBookmarksReady();
-    void handleBookmarkAdded(Swift::MUCBookmark bookmark);
-    void handleBookmarkRemoved(Swift::MUCBookmark bookmark);
+private:    
 
-    void handleJoinFailed(Swift::ErrorPayload::ref error);
-    void handleJoinComplete(const std::string &joinedName);
-    void handleUserLeft(Swift::MUC::LeavingType lt);
+    QXmppMucRoom *getRoom(QString const &roomJid);
 
-    void handleMessageReceived(Swift::Message::ref message);
-
-    void joinRoomIfConfigured(Swift::MUCBookmark const &bookmark);
-    void sendUnavailableToRoom(Swift::MUCBookmark bookmark);
-
-    bool isRoomAlreadyBookmarked(const QString& roomJid);
-
-
-    QString getNickName();
+    QXmppClient* client_;
+    QXmppMucManager *manager_;
+    QXmppBookmarkManager *bookmarkManager_;
     bool triggerNewMucSignal_;
 };
 

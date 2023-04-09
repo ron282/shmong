@@ -9,8 +9,6 @@ URL: https://github.com/geobra/shmong
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-Requires:   pkgconfig(qxmpp)
-
 BuildRequires:	pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Qml)
@@ -21,8 +19,8 @@ BuildRequires:  openssl-devel
 BuildRequires:  libgpg-error-devel
 BuildRequires:  libgcrypt-devel
 BuildRequires:  sqlite-devel
-BuildRequires:  qxmpp
-BuildRequires:  qxmpp-devel
+BuildRequires:  QXmpp
+BuildRequires:  QXmpp-devel
 
 
 %description

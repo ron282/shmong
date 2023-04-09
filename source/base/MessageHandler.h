@@ -19,7 +19,7 @@ class MessageHandler : public QObject
 {
     Q_OBJECT
 public:
-    MessageHandler(Persistence* persistence, Settings * settings, RosterController* rosterController, QObject *parent = 0);
+    MessageHandler(Persistence* persistence, Settings* settings, RosterController* rosterController, QObject* parent = 0);
 
     void setupWithClient(QXmppClient* client);
     void sendMessage(QString const &toJid, QString const &message, QString const &type, bool isGroup);

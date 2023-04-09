@@ -10,10 +10,10 @@ contains(DEFINES, DBUS) {
     QT += dbus
 }
 
-INCLUDEPATH += /usr/include/qxmpp
-INCLUDEPATH += /usr/include/qxmpp/omemo
-INCLUDEPATH += /usr/include/qxmpp/base
-INCLUDEPATH += /usr/include/qxmpp/client
+INCLUDEPATH += /usr/include/QXmppQt5
+INCLUDEPATH += /usr/include/QXmppQt5/Omemo
+INCLUDEPATH += /usr/include/QXmppQt5/base
+INCLUDEPATH += /usr/include/QXmppQt5/client
 
 INCLUDEPATH += source
 INCLUDEPATH += source/persistence
@@ -21,7 +21,7 @@ INCLUDEPATH += source/xep/httpFileUpload
 INCLUDEPATH += source/xep/mam
 INCLUDEPATH += source/xep/xmppPing
 INCLUDEPATH += source/xep/chatMarkers
-#INCLUDEPATH += source/room
+INCLUDEPATH += source/room
 INCLUDEPATH += source/networkconnection
 INCLUDEPATH += source/contacts
 INCLUDEPATH += source/base
@@ -41,9 +41,9 @@ contains(DEFINES, SFOS) {
 }
 
 QMAKE_CXXFLAGS += -std=c++17
-LIBS += -lgcrypt -lqxmpp -lQXmppOmemo
+LIBS += -lgcrypt -lQXmppQt5 -lQXmppOmemoQt5
 
-CONFIG += qxmpp
+CONFIG += QXmpp
 
 DEFINES += BOOST_SIGNALS_NO_DEPRECATION_WARNING
 
@@ -85,7 +85,7 @@ SOURCES += \
     source/xep/mam/MamManager.cpp \
     source/xep/xmppPing/XmppPingController.cpp \
     source/xep/chatMarkers/ChatMarkers.cpp \
-#    source/room/MucManager.cpp \
+    source/room/MucManager.cpp \
 #    source/room/MucCollection.cpp \
     source/networkconnection/ConnectionHandler.cpp \
     source/networkconnection/IpHeartBeatWatcher.cpp \
@@ -117,7 +117,7 @@ HEADERS += source/base/Shmong.h \
     source/xep/xmppPing/PingRequest.h \
     source/xep/xmppPing/XmppPingController.h \
     source/xep/chatMarkers/ChatMarkers.h \
-#    source/room/MucManager.h \
+    source/room/MucManager.h \
 #    source/room/MucCollection.h \
     source/networkconnection/ConnectionHandler.h \
     source/networkconnection/IpHeartBeatWatcher.h \
