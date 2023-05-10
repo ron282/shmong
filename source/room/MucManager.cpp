@@ -38,8 +38,7 @@ void MucManager::setupWithClient(QXmppClient* client)
 
 void MucManager::handleInvitationReceived(const QString &roomJid, const QString &inviter, const QString &reason)
 {
-    qDebug() << "handleInvitationReceived - roomJid:" << roomJid << ", inviter:" << inviter << ", reason: " << reason << endl;
-    this->addRoom(roomJid, {});
+    this->addRoom(roomJid, reason);
 }
 
 void MucManager::handleBookmarksReceived(const QXmppBookmarkSet &bookmarks)
@@ -113,7 +112,6 @@ QString MucManager::getNickName()
 void MucManager::addRoom(QString const &roomJid, QString const &roomName)
 {
     QString nickName = getNickName();
-    QString name = roomName;
 
     QXmppMucRoom *room = manager_->addRoom(roomJid);
     room->setNickName(nickName);
@@ -127,18 +125,13 @@ void MucManager::addRoom(QString const &roomJid, QString const &roomName)
 
         bookmark.setAutoJoin(true);
         bookmark.setNickName(nickName);
-
-        if(name.isEmpty())
-            name = room->name();
-
-        bookmark.setName(name);
+        bookmark.setName(roomName);
         bookmark.setJid(roomJid);
+
         bookmarks.conferences().append(bookmark);
          
         bookmarkManager_->setBookmarks(bookmarks);     
     }
-
-    emit newGroupForContactsList( roomJid, name);
 }
 
 QXmppMucRoom *MucManager::getRoom(QString const &roomJid)

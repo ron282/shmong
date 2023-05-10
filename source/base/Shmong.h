@@ -143,10 +143,10 @@ public:
     Settings* settings_;
     ConnectionHandler* connectionHandler_;
     HttpFileUploadManager* httpFileUploadManager_;
+    DiscoInfoHandler* discoInfoHandler_;
     MessageHandler* messageHandler_;
     MamManager* mamManager_;
     MucManager* mucManager_;
-    DiscoInfoHandler* discoInfoHandler_;
 
     QString jid_;
     QString password_;
