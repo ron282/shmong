@@ -79,8 +79,8 @@ Page {
         Component {
             id: sectionHeader
             Label {
-                property string section: getMsgDate(new Date (parent.ListView.section * 1000))
-                property string nextSection: getMsgDate(new Date (parent.ListView.nextSection * 1000))
+                property string section: getMsgDate(new Date (parseInt(parent.ListView.section, 10)))
+                property string nextSection: getMsgDate(new Date (parseInt(parent.ListView.nextSection, 10)))
                 property bool boundary: section != nextSection
 
                 text: boundary ? section : ""
@@ -92,6 +92,7 @@ Page {
         }
 
         section.property: "timestamp"
+        section.criteria: ViewSection.FullString
 
         delegate: Item {
             id: wrapper;
@@ -276,7 +277,7 @@ Page {
                             }
                         }
                         Label {
-                            text: refreshDate, getDateDiffFormated(new Date (timestamp * 1000));
+                            text: refreshDate, getDateDiffFormated(new Date (timestamp));
                             visible: msgstate != 4
                             color: Theme.secondaryColor;
                             font {

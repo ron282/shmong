@@ -28,7 +28,7 @@ public:
 #ifndef UNIT_TEST
 private:
 #endif
-    void requestArchiveForJid(const QString& jid, const QDateTime &from = QDateTime());
+    void requestArchiveForJid(const QString& jid, const QDateTime &from = QDateTime(), const QString &after = {});
 
     bool serverHasFeature_;
     QStringList queridJids_;

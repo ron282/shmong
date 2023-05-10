@@ -60,12 +60,9 @@ void MessageHandler::handleMessageReceived(const QXmppMessage &message)
     bool sentCarbon = false;
 
     // If this is a carbon message, we need to retrieve the actual content
-    if (message.isCarbonForwarded() == true)
+    if(client_->configuration().jidBare().compare(QXmppUtils::jidToBareJid(message.from()), Qt::CaseInsensitive) == 0)
     {
-        if(client_->configuration().jidBare().compare(QXmppUtils::jidToBareJid(message.from()), Qt::CaseInsensitive) == 0)
-        {
-            sentCarbon = true;
-        }
+        sentCarbon = true;
     }
 
     if (! message.body().isEmpty())
@@ -91,6 +88,7 @@ void MessageHandler::handleMessageReceived(const QXmppMessage &message)
                 downloadManager_->doDownload(oobUrl, messageId); // keep the fragment in the sent message
         }
 
+        // Group chats are not working for the moment
         //bool isGroupMessage = false;
         //if (message.type() == QXmppMessage::GroupChat)
         //{
@@ -108,6 +106,9 @@ void MessageHandler::handleMessageReceived(const QXmppMessage &message)
                 messageId = QString::number(QDateTime::currentMSecsSinceEpoch());
             }
         }
+
+        qDebug() << "-----------------------------------------------------";
+        qDebug() << "MESSAGE ADDED id:" << messageId << ", from: " << message.from() << ", to: " << message.to() << ", body: " << message.body();
 
         if (!sentCarbon)
         {

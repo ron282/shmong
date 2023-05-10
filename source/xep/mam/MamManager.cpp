@@ -50,38 +50,30 @@ void MamManager::receiveRoomWithName(QString jid, QString name)
 
 void MamManager::addJidforArchiveQuery(QString jid)
 {
-    //qDebug() << "MamManager::addJidforArchiveQuery " << jid;
-
     if (! queridJids_.contains(jid))
     {
         queridJids_.append(jid);
-        requestArchiveForJid(jid);
+        requestArchiveForJid(jid, QDateTime::currentDateTimeUtc().addDays(-14));
     }
 }
 
 void MamManager::setServerHasFeatureMam(bool hasFeature)
 {
-    // qDebug() << "MamManager::setServerHasFeatureMam: " << hasFeature;
     serverHasFeature_ = hasFeature;
 
     requestArchiveForJid(client_->configuration().jidBare());
 }
 
-void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from)
+void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from, const QString &after)
 {
     if (serverHasFeature_)
     {
-        QDateTime start = QDateTime::currentDateTimeUtc().addDays(-14);
+        QXmppResultSetQuery resultSetQuery;
+        resultSetQuery.setAfter(after);
 
-        if(from.isNull() == false)
-        {
-            start = from;
-        }
+        auto future = qXmppMamManager_->retrieveMessages(QString(), QString(), QString(), from, QDateTime(), resultSetQuery);
 
-        qDebug() << "MamManager::requestArchiveForJid: " << jid;
-        auto future = qXmppMamManager_->retrieveMessages(QString(), QString(), jid, start, QDateTime::currentDateTimeUtc());
-
-        future.then(this, [this](QXmppMamManager::RetrieveResult result) {
+        auto processMamResult = [this, jid](QXmppMamManager::RetrieveResult result) {
             auto error = std::get_if<QXmppError>(&result);
             if (error) {
                 qWarning() << "Cannot retrieve Mam messages";
@@ -90,12 +82,17 @@ void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from)
                 const auto &retrievedMessages = std::get<QXmppMamManager::RetrievedMessages>(result);
                 QVectorIterator<QXmppMessage> it(retrievedMessages.messages);
                 
-                qDebug() << "Mam messages received: " << retrievedMessages.messages.size();
-
                 while(it.hasNext()) {
                     emit mamMessageReceived(it.next());
                 }
-            } 
-        });
+
+                if(retrievedMessages.result.complete() == false)
+                {
+                    requestArchiveForJid(jid, QDateTime(), retrievedMessages.result.resultSetReply().last());
+                }
+            }
+        };
+
+        future.then(this, processMamResult);
     }
 }

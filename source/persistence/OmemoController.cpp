@@ -117,6 +117,8 @@ QXmppTask<QXmppOmemoStorage::OmemoData> OmemoController::allData()
         dev.unrespondedReceivedStanzasCount = r.value(Database::sqlDeviceUnrespondedReceivedStanza_).toInt();
         dev.removalFromDeviceListDate = r.value(Database::sqlRemoveDate_).toDateTime(); 
 
+        qDebug() << "DBread device for " << r.value(Database::sqlJid_).toString() << ", id: " << r.value(Database::sqlDeviceId_).toUInt();
+        qDebug() << "       keyId    : " << r.value(Database::sqlDeviceKeyId_).toString().toUtf8();
         d.devices[r.value(Database::sqlJid_).toString()][r.value(Database::sqlDeviceId_).toUInt()] = std::move(dev);       
     }
 

@@ -156,10 +156,9 @@ bool MessageController::addMessage(const QString &id, const QString &jid, const 
 
         if (timestamp == 0)
         {
-            timestamp = QDateTime::currentDateTimeUtc().toTime_t();
+            timestamp = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
         }
         record.setValue(Database::sqlTimestamp_, timestamp);
-
 
         if (! this->insertRecord(-1, record))
         {
