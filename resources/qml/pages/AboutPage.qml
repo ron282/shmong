@@ -43,7 +43,7 @@ Page {
         anchors.bottomMargin: Theme.paddingSmall
         color: Theme.secondaryColor
         font.pixelSize: Theme.fontSizeExtraSmall
-        text: "https://github.com/geobra/harbour-shmong"
+        text: "https://github.com/ron282/shmong"
     }
 }
 
