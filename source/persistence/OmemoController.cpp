@@ -96,6 +96,8 @@ QXmppTask<QXmppOmemoStorage::OmemoData> OmemoController::allData()
         spk.creationDate = r.value(Database::sqlSignedPreKeyCreationDate_).toDateTime();
         spk.data = QByteArray::fromHex(r.value(Database::sqlSignedPreKeyData_).toString().toUtf8());
 
+        qDebug() << "DBread SignedPreKeySignature(" << QString::number(r.value(Database::sqlSignedPreKeyId_).toUInt()) << "):" << spk.data.toBase64();
+
         d.signedPreKeyPairs[r.value(Database::sqlSignedPreKeyId_).toUInt()] = std::move(spk);       
     }
 
@@ -460,7 +462,6 @@ QXmppTask<void> OmemoController::resetAll()
         }
     }
  
-    // NOt sure persistent data has to be cleared
     return makeReadyTask();
 }
 

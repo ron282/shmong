@@ -8,5 +8,5 @@ Icon=harbour-shmong
 Exec=harbour-shmong
 
 [X-Sailjail]
-Permissions=Internet;UserDir
+Permissions=Internet;UserDirs
 ApplicationName=Shmong
