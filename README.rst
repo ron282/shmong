@@ -6,72 +6,6 @@ Fork of `Shmoose <https://github.com/geobra/harbour-shmoose>`_ to be build on `q
 
 Very early alpha stage.
 
--------------------------------------------------------------------------------
-Install build dependencies on SFOS
--------------------------------------------------------------------------------
-
-Ssh into mersdk::
-
-* mkdir xmpp && cd xmpp
-
-Build Qca::
-
-* wget https://github.com/KDE/qca/archive/refs/tags/v2.2.1.tar.gz
-* tar -xvf ...
-* cd qca-2.2.1
-* mkdir build_arm && cd build_arm
-* set TESTS to off in CMakeLists.txt
-* sb2 -t SailfishOS-4.2.0.21-aarch64 cmake ..
-* sb2 -t SailfishOS-4.2.0.21-aarch64 make
-* cd ..
-
-Build libomemo-c::
-
-* https://github.com/dino/libomemo-c
-* cd libomemo-c
-* add 'set(CMAKE_POSITION_INDEPENDENT_CODE ON)' to CMakeLists.txt
-* mkdir build_arm && cd build_arm
-* sb2 -t SailfishOS-4.2.0.21-aarch64 cmake ..
-* sb2 -t SailfishOS-4.2.0.21-aarch64 make
-* cd ..
-
-Build Qxmpp::
-
-* git clone https://github.com/geobra/qxmpp-sfos
-* cd qxmpp-sfos
-* patch -p1 < sfos.diff
-* mkdir build_arm && cd build_arm
-* sb2 -t SailfishOS-4.2.0.21-aarch64 cmake -DBUILD_EXAMPLES=false -DBUILD_TESTS=false -DBUILD_OMEMO=true ..
-* sb2 -t SailfishOS-4.2.0.21-aarch64 make
-
--------------------------------------------------------------------------------
-Install build dependencies on host
--------------------------------------------------------------------------------
-
-create and build in each of the dependencies packets a build dir and do the same build steps::
-
-* mkdir build && cd build
-* cmake ..
-* make
-
-
--------------------------------------------------------------------------------
-Build ShmoNG
--------------------------------------------------------------------------------
-
-on SFOS::
-
-* mb2 -t SailfishOS-4.2.0.21-armv7hl build
-
-on Host::
-
-* qmake
-* make
-
-
--------------------------------------------------------------------------------
-Alternate way to compile using sfdk command line 
--------------------------------------------------------------------------------
 
 Install regular Sailfish SDK: sfdk 
 (see https://docs.sailfishos.org/Tools/Sailfish_SDK/Installation/)
@@ -108,7 +42,7 @@ Build QXmpp::
 
  git clone https://github.com/ron282/qxmpp
  cd qxmpp
- git checkout qxmpp-project-1.5
+ git checkout 1.5
  sfdk build
  cd ..
 
@@ -139,3 +73,16 @@ Deploy packages to device::
  cd ../shmong
  sfdk deploy --sdk  "-*-devel"
 
+To recompile for another target using the same directories
+Remove the build directory for each library and object files for app::
+
+cd libomemo-c
+rm -rf build
+cd ../qca
+rm -rf build
+cd ../qxmpp
+rm -rf build
+cd ../shmong
+rm *.o
+
+Restart from select a SDK::
