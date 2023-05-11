@@ -80,7 +80,7 @@ bool Database::open(QString const &jid)
     }
     else
     {
-        QString dbName = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + QDir::separator() + databaseName;
+        QString dbName = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + QDir::separator() + databaseName;
         database_.setDatabaseName(dbName);
         if (database_.open() == false)
         {
@@ -89,8 +89,7 @@ bool Database::open(QString const &jid)
         }
         else
         {
-            /* shmong uses two table
-             * one for all the messages, one for all the sessions
+            /* shmong uses several tables
              *
              * + no table joins
              * + no complex queries
