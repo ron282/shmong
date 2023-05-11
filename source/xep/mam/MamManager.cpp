@@ -3,6 +3,7 @@
 #include "XmlWriter.h"
 #include "ImageProcessing.h"
 #include "DownloadManager.h"
+#include "Settings.h"
 
 #include "QXmppClient.h"
 #include "QXmppMamManager.h"
@@ -53,7 +54,7 @@ void MamManager::addJidforArchiveQuery(QString jid)
     if (! queridJids_.contains(jid))
     {
         queridJids_.append(jid);
-        requestArchiveForJid(jid, QDateTime::currentDateTimeUtc().addDays(-14));
+        requestArchiveForJid(jid);
     }
 }
 
@@ -61,13 +62,25 @@ void MamManager::setServerHasFeatureMam(bool hasFeature)
 {
     serverHasFeature_ = hasFeature;
 
-    requestArchiveForJid(client_->configuration().jidBare());
+    if(serverHasFeature_) {
+        requestArchiveForJid(client_->configuration().jidBare());
+    }
 }
 
-void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from, const QString &after)
+void MamManager::requestArchiveForJid(const QString& jid, const QString &after)
 {
     if (serverHasFeature_)
     {
+        QDateTime from;
+
+        if(after.isEmpty()) {
+            QString lastMsgId = Settings().getMamLastMsgId(jid);
+
+            if(lastMsgId.isEmpty()) {
+                from = QDateTime::currentDateTimeUtc().addDays(-14);
+            }
+        }
+
         QXmppResultSetQuery resultSetQuery;
         resultSetQuery.setAfter(after);
 
@@ -88,7 +101,11 @@ void MamManager::requestArchiveForJid(const QString& jid, const QDateTime &from,
 
                 if(retrievedMessages.result.complete() == false)
                 {
-                    requestArchiveForJid(jid, QDateTime(), retrievedMessages.result.resultSetReply().last());
+                    requestArchiveForJid(jid, retrievedMessages.result.resultSetReply().last());
+                }
+                else
+                {
+                    Settings().setMamLastMsgId(jid, retrievedMessages.result.resultSetReply().last());
                 }
             }
         };
