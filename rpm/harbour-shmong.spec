@@ -19,9 +19,8 @@ BuildRequires:  openssl-devel
 BuildRequires:  libgpg-error-devel
 BuildRequires:  libgcrypt-devel
 BuildRequires:  sqlite-devel
-BuildRequires:  QXmpp
 BuildRequires:  QXmpp-devel
-
+Requires:       QXmpp
 
 %description
 XMPP Client for Sailfish OS
