@@ -5,6 +5,8 @@
 #include <QUrl>
 #include <QStringList>
 
+class QSettings;
+
 class Settings : public QObject
 {
     Q_OBJECT
@@ -29,6 +31,7 @@ class Settings : public QObject
 
 public:
     explicit Settings(QObject *parent = nullptr);
+    ~Settings();
 
     QString getJid() const;
     QString getPassword() const;
@@ -47,6 +50,8 @@ public:
     bool getSoftwareFeatureOmemoEnabled() const;
     QString getResourceId() const;
     bool getAskBeforeDownloading() const;
+    void setMamLastMsgId(QString mamJid, QString last);
+    QString getMamLastMsgId(QString mamJid) const;
 
 signals:
     void jidChanged(QString Jid);
@@ -93,6 +98,9 @@ public slots:
     void setSoftwareFeatureOmemoEnabled(bool enableSoftwareFeatureOmemo);
     void setResourceId(QString ResourceId);
     void setAskBeforeDownloading(bool AskBeforeDownloading);
+
+private:
+    QSettings *settings_;
 };
 
 #endif // SETTINGS_H
