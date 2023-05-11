@@ -31,7 +31,7 @@ Page {
             property int availability : shmong.rosterController.getAvailability(jid)
 
             onClicked: {
-                console.log("set current char partner: " + jid);
+                console.log("set current chat partner: " + jid);
                 pageStack.push (pageMessaging, { "conversationId" : jid });
                 shmong.setCurrentChatPartner(jid);
             }
