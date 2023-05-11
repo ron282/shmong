@@ -52,10 +52,10 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     settings_(new Settings(this)),
     connectionHandler_(new ConnectionHandler(this)),
     httpFileUploadManager_(new HttpFileUploadManager(this)),
+    discoInfoHandler_(new DiscoInfoHandler(this)),
     messageHandler_(new MessageHandler(persistence_, settings_, rosterController_, this)),
     mamManager_(new MamManager(persistence_, this)),
     mucManager_(new MucManager(this)),
-    discoInfoHandler_(new DiscoInfoHandler(this)),
     jid_(""), password_(""),
     version_("0.1.0"),
     notSentMsgId_(""),
@@ -224,12 +224,28 @@ void Shmong::omemoResetAll()
     if(omemoManager_ != nullptr)
     {
         omemoManager_->resetAll();
-    }    
+    }
+}
+
+void Shmong::resetOwnDevice()
+{
+    if(omemoManager_ != nullptr)
+    {
+        omemoManager_->resetOwnDevice();
+    }
+}
+
+void Shmong::setUp()
+{
+    if(omemoManager_ != nullptr)
+    {
+        omemoManager_->setUp();
+    }
 }
 
 void Shmong::intialSetupOnFirstConnection()
 {
-    if(omemoLoaded_ == false && settings_->getSoftwareFeatureOmemoEnabled() == true) {
+    if(omemoLoaded_ == false && omemoManager_ != nullptr) {
         omemoManager_->setUp();
     }
 
@@ -344,7 +360,7 @@ bool Shmong::isOmemoUser(const QString& jid)
     bool returnValue = false;
 
     // No encryption with groups in this version
-    if(rosterController_->isGroup(jid) == false)
+    if(rosterController_->isGroup(jid) == false && omemoManager_ != nullptr)
     {
         auto future = omemoManager_->devices(QStringList(jid));
         future.then(this, [=, &returnValue](QVector<QXmppOmemoDevice> devices) {

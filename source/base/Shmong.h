@@ -86,6 +86,8 @@ public:
 
     Q_INVOKABLE bool isOmemoUser(const QString& jid);
     Q_INVOKABLE void omemoResetAll();
+    Q_INVOKABLE void resetOwnDevice();
+    Q_INVOKABLE void setUp();
 
     Q_INVOKABLE void saveAttachment(const QString &msg);
     Q_INVOKABLE unsigned int getMaxUploadSize();
