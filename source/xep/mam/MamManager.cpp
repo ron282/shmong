@@ -72,17 +72,18 @@ void MamManager::requestArchiveForJid(const QString& jid, const QString &after)
     if (serverHasFeature_)
     {
         QDateTime from;
+        QString  afterMsgId(after); 
 
-        if(after.isEmpty()) {
-            QString lastMsgId = Settings().getMamLastMsgId(jid);
+        if(afterMsgId.isEmpty()) {
+            afterMsgId = Settings().getMamLastMsgId(jid);
 
-            if(lastMsgId.isEmpty()) {
+            if(afterMsgId.isEmpty()) {
                 from = QDateTime::currentDateTimeUtc().addDays(-14);
             }
         }
 
         QXmppResultSetQuery resultSetQuery;
-        resultSetQuery.setAfter(after);
+        resultSetQuery.setAfter(afterMsgId);
 
         auto future = qXmppMamManager_->retrieveMessages(QString(), QString(), QString(), from, QDateTime(), resultSetQuery);
 

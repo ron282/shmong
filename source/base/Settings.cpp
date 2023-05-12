@@ -444,10 +444,10 @@ void Settings::setAskBeforeDownloading(bool askBeforeDownloading)
 
 QString Settings::getMamLastMsgId(QString mamJid) const
 {
-    return settings_->value("mam/lastmsgid/"+mamJid).toString();
+    return settings_->value("mam/"+mamJid).toString();
 }
 
 void Settings::setMamLastMsgId(QString mamJid, QString lastMsgId)
 {
-    settings_->setValue("mam/lastmsgid/"+mamJid, lastMsgId);
+    settings_->setValue("mam/"+mamJid, lastMsgId);
 }
