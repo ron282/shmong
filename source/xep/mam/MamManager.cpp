@@ -106,7 +106,8 @@ void MamManager::requestArchiveForJid(const QString& jid, const QString &after)
                 }
                 else
                 {
-                    Settings().setMamLastMsgId(jid, retrievedMessages.result.resultSetReply().last());
+                    if(!retrievedMessages.result.resultSetReply().last().isEmpty())
+                        Settings().setMamLastMsgId(jid, retrievedMessages.result.resultSetReply().last());
                 }
             }
         };

@@ -103,6 +103,7 @@ public slots:
     void sendFile(QUrl const &file);
     void attachmentUploadFailed();
     void fileUploaded(QString const&toJid, QString const&message, const QString &type);
+    void setMsgToConsole(bool enabled);
 
 private slots:
     void sendReadNotification(bool active);

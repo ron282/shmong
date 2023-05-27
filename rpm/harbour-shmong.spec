@@ -5,7 +5,7 @@ Summary: Shmong - XMPP Client for Sailfish OS
 
 Group: Qt/Qt
 License: GPL
-URL: https://github.com/geobra/shmong
+URL: https://github.com/ron282/shmong
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 

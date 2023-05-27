@@ -104,6 +104,7 @@ Shmong::Shmong(QObject *parent) : QObject(parent),
     connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(slotAboutToQuit()));
     connect(settings_, SIGNAL(compressImagesChanged(bool)), httpFileUploadManager_, SLOT(setCompressImages(bool)));
     connect(settings_, SIGNAL(limitCompressionChanged(unsigned int)), httpFileUploadManager_, SLOT(setLimitCompression(unsigned int)));
+    connect(settings_, SIGNAL(msgToConsoleChanged(bool)), this, SLOT(setMsgToConsole(bool)));
     connect(messageHandler_, SIGNAL(httpDownloadFinished(QString)), this, SIGNAL(httpDownloadFinished(QString)));
 }
 
@@ -153,10 +154,12 @@ void Shmong::mainConnect(const QString &jid, const QString &pass)
     mamManager_->setupWithClient(client_);
     connect(mamManager_, &MamManager::mamMessageReceived, messageHandler_, &MessageHandler::handleMessageReceived);
 
-    client_->logger()->setLoggingType(QXmppLogger::StdoutLogging);
+    setMsgToConsole(settings_->getMsgToConsole()); 
 
     pubsubManager_ = new QXmppPubSubManager();
     client_->addExtension(pubsubManager_);
+
+    client_->addNewExtension<QXmppCarbonManagerV2>();
 
     // Omemo
     if (settings_->getSoftwareFeatureOmemoEnabled() == true)
@@ -217,6 +220,11 @@ void Shmong::reConnect()
         client_->connect();
     }
 #endif
+}
+
+void Shmong::setMsgToConsole(bool enabled)
+{
+    client_->logger()->setLoggingType(enabled ? QXmppLogger::StdoutLogging : QXmppLogger::NoLogging);
 }
 
 void Shmong::omemoResetAll()

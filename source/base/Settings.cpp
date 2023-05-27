@@ -444,10 +444,27 @@ void Settings::setAskBeforeDownloading(bool askBeforeDownloading)
 
 QString Settings::getMamLastMsgId(QString mamJid) const
 {
-    return settings_->value("mam/"+mamJid).toString();
+    QString key("mam/" + mamJid.replace("@", "-at-"));
+    return settings_->value(key).toString();
 }
 
 void Settings::setMamLastMsgId(QString mamJid, QString lastMsgId)
 {
-    settings_->setValue("mam/"+mamJid, lastMsgId);
+    QString key("mam/" + mamJid.replace("@", "-at-"));
+    settings_->setValue(key, lastMsgId);
+}
+
+bool Settings::getMsgToConsole() const
+{
+    bool enabled{false};
+
+    enabled = settings_->value("debug/msgToConsole", false).toBool();
+
+    return enabled;
+}
+
+void Settings::setMsgToConsole(bool msgToConsole)
+{
+    settings_->setValue("debug/msgToConsole", msgToConsole);
+    emit msgToConsoleChanged(msgToConsole);
 }

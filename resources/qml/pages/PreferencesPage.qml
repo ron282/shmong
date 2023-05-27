@@ -15,6 +15,7 @@ Page {
         Column {
             id: column
             width: parent.width
+            spacing: Theme.paddingSmall
 
             PageHeader { title: qsTr("Settings") }
 
@@ -59,14 +60,25 @@ Page {
                 }
             }
 
-            SectionHeader { text: qsTr("Features") }
+            SectionHeader { text: qsTr("OMEMO Encryption (v0.3)") }
 
             TextSwitch {
                 id: softwareFeatureOmemoSwitch
                 checked: shmong.settings.EnableSoftwareFeatureOmemo
-                text: qsTr("Omemo v0.3 Message Encryption (Need app restart)")
+                text: qsTr("Enable (Need app restart)")
                 onClicked: {
                     shmong.settings.EnableSoftwareFeatureOmemo = softwareFeatureOmemoSwitch.checked;
+                }
+            }
+
+            SectionHeader { text: qsTr("Debug") }
+
+            TextSwitch {
+                id: msgToConsoleSwitch
+                checked: shmong.settings.MsgToConsole
+                text: qsTr("Send messages to console")
+                onClicked: {
+                    shmong.settings.MsgToConsole = msgToConsoleSwitch.checked;
                 }
             }
         }
