@@ -1,5 +1,5 @@
 Name: harbour-shmong
-Version: 0.1.0
+Version: 0.1.1
 Release:	1%{?dist}
 Summary: Shmong - XMPP Client for Sailfish OS
 
@@ -19,7 +19,7 @@ BuildRequires:  openssl-devel
 BuildRequires:  libgpg-error-devel
 BuildRequires:  libgcrypt-devel
 BuildRequires:  sqlite-devel
-BuildRequires:  QXmpp-devel
+BuildRequires:  QXmpp-devel >= 1.5.5-1
 Requires:       QXmpp
 
 %description
