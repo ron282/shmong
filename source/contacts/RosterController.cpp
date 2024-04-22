@@ -642,7 +642,7 @@ bool RosterController::appendToRosterIfNotAlreadyIn(const QString& jid)
     {
         QXmppRosterIq::Item item = rosterManager_->getRosterEntry(jid);
 
-        rosterList_.append(new RosterItem(jid, item.name(), RosterItem::SUBSCRIPTION_NONE, item.groups().size()>0, this));
+        rosterList_.append(new RosterItem(jid, item.name(), RosterItem::SUBSCRIPTION_NONE, false, this));
         return true; // entry added
     }
     else
